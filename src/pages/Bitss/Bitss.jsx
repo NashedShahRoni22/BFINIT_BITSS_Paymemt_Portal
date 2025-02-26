@@ -75,13 +75,14 @@ export default function Bitss() {
                       <span className="text-base font-medium">
                         {order?.software}
                       </span>{" "}
+                      <br /> {order?.duration} Months
                     </td>
                     <td className="px-3 py-2 border border-neutral-200">
-                      €{order?.price}
+                      {order?.price} {order?.currencey}
                     </td>
                     <td className="px-3 py-2 capitalize border border-neutral-200">
-                      {order?.payment_type}
-                      <br />
+                      {/* {order?.payment_type}
+                      <br /> */}
                       {order?.status ? (
                         <span className="px-1 py-0.5 rounded text-xs mt-1 inline-block border border-green-100 text-green-500 bg-green-100">
                           Paid
