@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
 import Loader from "../../components/Loader";
-import { FiEdit, FiTrash2 } from "react-icons/fi";
+import BitssTableRow from "../../components/BitssTableRow";
 
 export default function Bitss() {
   const baseUrl = import.meta.env.VITE_Base_Url;
@@ -22,8 +21,6 @@ export default function Bitss() {
 
     fetchOrders();
   }, [baseUrl]);
-
-  console.log(orders);
 
   return (
     <section className="px-5">
@@ -57,59 +54,11 @@ export default function Bitss() {
             <tbody>
               {orders &&
                 orders.map((order) => (
-                  <tr
+                  <BitssTableRow
                     key={order._id}
-                    className="border bg-white border-neutral-200 text-sm text-gray-600"
-                  >
-                    <td className="px-3 py-2 border border-neutral-200">
-                      #{order?.order_id}
-                    </td>
-                    <td className="px-3 py-2 border border-neutral-200">
-                      <span className="text-base font-medium">
-                        {order?.name}
-                      </span>{" "}
-                      <br />{" "}
-                      <span className="text-neutral-500">{order?.email}</span>
-                    </td>
-                    <td className="px-3 py-2 border border-neutral-200">
-                      <span className="text-base font-medium">
-                        {order?.software}
-                      </span>{" "}
-                      <br /> {order?.duration} Months
-                    </td>
-                    <td className="px-3 py-2 border border-neutral-200">
-                      {order?.price} {order?.currencey}
-                    </td>
-                    <td className="px-3 py-2 capitalize border border-neutral-200">
-                      {/* {order?.payment_type}
-                      <br /> */}
-                      {order?.status ? (
-                        <span className="px-1 py-0.5 rounded text-xs mt-1 inline-block border border-green-100 text-green-500 bg-green-100">
-                          Paid
-                        </span>
-                      ) : (
-                        <span className="px-1 py-0.5 rounded text-xs mt-1 inline-block border border-red-100 text-red-500 bg-red-100">
-                          Unpaid
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-3 py-2 border border-neutral-200">
-                      <div className="flex h-full items-center justify-start gap-4">
-                        <Link
-                          to={`/dashboard/update-order/${order?._id}`}
-                          className="text-blue-500 hover:text-blue-700"
-                        >
-                          <FiEdit className="h-5 w-5" />
-                        </Link>
-                        <button
-                          // onClick={() => handleorderDelete(order.id, order.title)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <FiTrash2 className="h-5 w-5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                    orders={orders}
+                    order={order}
+                  />
                 ))}
             </tbody>
           </table>
