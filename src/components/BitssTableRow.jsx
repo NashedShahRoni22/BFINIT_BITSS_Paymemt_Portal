@@ -6,6 +6,7 @@ import { IoCheckmarkOutline, IoCloseOutline } from "react-icons/io5";
 export default function BitssTableRow({ order, orders }) {
   const [status, setStatus] = useState(order?.status ? "paid" : "unpaid");
   const [showUpdateStatus, setShowUpdateStatus] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Handle Status Update
   const handleStatusUpdate = (e) => {
@@ -26,6 +27,8 @@ export default function BitssTableRow({ order, orders }) {
 
   // Confirm Payment Status Update
   const handleConfirmStatusUpdate = async () => {
+    setLoading(true);
+
     try {
       const res = await fetch(
         `${import.meta.env.VITE_Base_Url}/payments/bitss/payment/approved/${
@@ -40,8 +43,10 @@ export default function BitssTableRow({ order, orders }) {
           updatedOrder.status = status === "paid";
         }
       }
+      setLoading(false);
     } catch (error) {
       console.log(error);
+      setLoading(false);
     }
   };
 
@@ -65,6 +70,7 @@ export default function BitssTableRow({ order, orders }) {
         <select
           value={status}
           onChange={handleStatusUpdate}
+          disabled={order.status}
           className="px-2 py-1 rounded border border-neutral-200 focus:outline-none"
         >
           <option value="paid" disabled={order?.status}>
@@ -78,14 +84,23 @@ export default function BitssTableRow({ order, orders }) {
         {showUpdateStatus && (
           <>
             <button
+              disabled={loading}
               onClick={handleConfirmStatusUpdate}
-              className="border border-green-500 bg-green-100 text-green-500 cursor-pointer rounded"
+              className={`border cursor-pointer rounded ${
+                loading
+                  ? "border-neutral-200 bg-neutral-100 text-neutral-400"
+                  : "border-green-500 bg-green-100 text-green-500"
+              }`}
             >
               <IoCheckmarkOutline className="text-lg" />
             </button>
             <button
               onClick={handleCancel}
-              className="border border-red-500 bg-red-100 text-red-500 cursor-pointer rounded"
+              className={`border cursor-pointer rounded ${
+                loading
+                  ? "border-neutral-200 bg-neutral-100 text-neutral-400"
+                  : "border-red-500 bg-red-100 text-red-500"
+              }`}
             >
               <IoCloseOutline className="text-lg" />
             </button>
