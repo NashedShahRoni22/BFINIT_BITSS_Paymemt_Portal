@@ -33,7 +33,7 @@ export default function Login() {
         .then((data) => {
           if (data.status === "success") {
             localStorage.setItem("bfinitBlogAccessToken", data.data.token);
-            navigate("/dashboard");
+            navigate("/dashboard/bfinit");
             setLoading(false);
           } else {
             setLoading(false);
