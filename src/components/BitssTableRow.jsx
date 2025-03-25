@@ -7,6 +7,8 @@ export default function BitssTableRow({ order, orders }) {
   const [status, setStatus] = useState(order?.status ? "paid" : "unpaid");
   const [showUpdateStatus, setShowUpdateStatus] = useState(false);
   const [loading, setLoading] = useState(false);
+  const validTill = order?.valid_till ? new Date(order.valid_till) : null;
+  const formattedDate = validTill ? validTill.toISOString().split("T")[0] : "";
 
   // Handle Status Update
   const handleStatusUpdate = (e) => {
@@ -61,7 +63,7 @@ export default function BitssTableRow({ order, orders }) {
       </td>
       <td className="px-3 py-2 border border-neutral-200">
         <span className="text-base font-medium">{order?.software}</span> <br />{" "}
-        {order?.duration} Months
+        {formattedDate && `${formattedDate} Months`}
       </td>
       <td className="px-3 py-2 border border-neutral-200">
         {order?.price} {order?.currencey}
@@ -71,7 +73,9 @@ export default function BitssTableRow({ order, orders }) {
           value={status}
           onChange={handleStatusUpdate}
           disabled={order.status}
-          className="px-2 py-1 rounded border border-neutral-200 focus:outline-none"
+          className={`px-2 py-1 rounded border border-neutral-200 focus:outline-none ${
+            order.status ? "bg-neutral-100 text-neutral-400" : "cursor-pointer"
+          }`}
         >
           <option value="paid" disabled={order?.status}>
             Paid
