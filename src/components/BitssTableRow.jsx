@@ -4,33 +4,34 @@ import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { IoCheckmarkOutline, IoCloseOutline } from "react-icons/io5";
 
 export default function BitssTableRow({ order, orders }) {
-  const [status, setStatus] = useState(order?.status ? "paid" : "unpaid");
+  const [status, setStatus] = useState(order?.status);
   const [showUpdateStatus, setShowUpdateStatus] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isStatusConfirmed, setIsStatusConfirmed] = useState(
+    order?.status === "paid"
+  );
+
   const validTill = order?.valid_till ? new Date(order.valid_till) : null;
   const formattedDate = validTill ? validTill.toISOString().split("T")[0] : "";
 
-  // Handle Status Update
   const handleStatusUpdate = (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
-    if (newStatus !== (order?.status ? "paid" : "unpaid")) {
+
+    if (newStatus !== order?.status) {
       setShowUpdateStatus(true);
     } else {
       setShowUpdateStatus(false);
     }
   };
 
-  // Cancel Status Update
   const handleCancel = () => {
+    setStatus(order?.status);
     setShowUpdateStatus(false);
-    setStatus(order?.status ? "paid" : "unpaid");
   };
 
-  // Confirm Payment Status Update
   const handleConfirmStatusUpdate = async () => {
     setLoading(true);
-
     try {
       const res = await fetch(
         `${import.meta.env.VITE_Base_Url}/payments/bitss/payment/approved/${
@@ -38,16 +39,18 @@ export default function BitssTableRow({ order, orders }) {
         }`
       );
       const data = await res.json();
+
       if (data.success) {
         setShowUpdateStatus(false);
+        setIsStatusConfirmed(true); // Mark as confirmed so select is disabled
         const updatedOrder = orders.find((o) => o._id === order._id);
         if (updatedOrder) {
-          updatedOrder.status = status === "paid";
+          updatedOrder.status = status; // fix: use string not boolean
         }
       }
-      setLoading(false);
     } catch (error) {
-      console.log(error);
+      console.error(error);
+    } finally {
       setLoading(false);
     }
   };
@@ -58,11 +61,11 @@ export default function BitssTableRow({ order, orders }) {
         #{order?.order_id}
       </td>
       <td className="px-3 py-2 border border-neutral-200">
-        <span className="text-base font-medium">{order?.name}</span> <br />{" "}
+        <span className="text-base font-medium">{order?.name}</span> <br />
         <span className="text-neutral-500">{order?.email}</span>
       </td>
       <td className="px-3 py-2 border border-neutral-200">
-        <span className="text-base font-medium">{order?.software}</span> <br />{" "}
+        <span className="text-base font-medium">{order?.software}</span> <br />
         {formattedDate && `${formattedDate} Months`}
       </td>
       <td className="px-3 py-2 border border-neutral-200">
@@ -72,20 +75,21 @@ export default function BitssTableRow({ order, orders }) {
         <select
           value={status}
           onChange={handleStatusUpdate}
-          disabled={order.status}
-          className={`px-2 py-1 rounded border border-neutral-200 focus:outline-none ${
-            order.status ? "bg-neutral-100 text-neutral-400" : "cursor-pointer"
+          disabled={isStatusConfirmed || loading}
+          className={`px-2 py-1 rounded border border-neutral-200 focus:outline-none transition-colors duration-200 ${
+            status === "paid"
+              ? "bg-neutral-100 text-neutral-400"
+              : "cursor-pointer"
           }`}
         >
-          <option value="paid" disabled={order?.status}>
-            Paid
-          </option>
-          <option value="unpaid" disabled={!order?.status}>
+          <option value="paid">Paid</option>
+          <option value="unpaid" disabled>
             Unpaid
           </option>
         </select>
 
-        {showUpdateStatus && (
+        {/* Show update buttons only if status changed and not already confirmed */}
+        {showUpdateStatus && !isStatusConfirmed && (
           <>
             <button
               disabled={loading}
@@ -100,6 +104,7 @@ export default function BitssTableRow({ order, orders }) {
             </button>
             <button
               onClick={handleCancel}
+              disabled={loading}
               className={`border cursor-pointer rounded ${
                 loading
                   ? "border-neutral-200 bg-neutral-100 text-neutral-400"
@@ -119,10 +124,7 @@ export default function BitssTableRow({ order, orders }) {
           >
             <FiEdit className="h-5 w-5" />
           </Link>
-          <button
-            // onClick={() => handleorderDelete(order.id, order.title)}
-            className="text-red-500 hover:text-red-700"
-          >
+          <button className="text-red-500 hover:text-red-700">
             <FiTrash2 className="h-5 w-5" />
           </button>
         </div>
