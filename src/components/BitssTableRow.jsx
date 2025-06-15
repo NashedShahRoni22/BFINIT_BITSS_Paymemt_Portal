@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { FiEdit, FiTrash2 } from "react-icons/fi";
+import { FiEye } from "react-icons/fi";
 import { IoCheckmarkOutline, IoCloseOutline } from "react-icons/io5";
 
 export default function BitssTableRow({ order, orders }) {
@@ -117,16 +117,16 @@ export default function BitssTableRow({ order, orders }) {
         )}
       </td>
       <td className="px-3 py-2 border border-neutral-200">
-        <div className="flex h-full items-center justify-start gap-4">
+        <div className="flex h-full items-center justify-center gap-4">
           <Link
-            to={`/dashboard/update-order/${order?._id}`}
+            to={`/dashboard/bitss/${order?._id}`}
             className="text-blue-500 hover:text-blue-700"
           >
-            <FiEdit className="h-5 w-5" />
+            <FiEye className="h-5 w-5" />
           </Link>
-          <button className="text-red-500 hover:text-red-700">
+          {/* <button className="text-red-500 hover:text-red-700">
             <FiTrash2 className="h-5 w-5" />
-          </button>
+          </button> */}
         </div>
       </td>
     </tr>

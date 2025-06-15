@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router";
 import Main from "../Layout/Main";
-import Bfinit from "../pages/BFINIT/BFINIT";
+import Bfinit from "../pages/Bfinit/Bfinit";
 import Bitss from "../pages/Bitss/Bitss";
 import Login from "../pages/Login/Login";
 import PrivateRoute from "./PrivateRoute";
@@ -25,6 +25,14 @@ export const router = createBrowserRouter([
       {
         path: "/dashboard/bitss",
         element: <Bitss />,
+      },
+      {
+        path: "/dashboard/bfinit/:orderId",
+        element: <div>BFINIT order details page</div>,
+      },
+      {
+        path: "/dashboard/bitss/:orderId",
+        element: <div>Bitss order details page</div>,
       },
     ],
   },
