@@ -5,8 +5,11 @@ import { PiEye, PiEyeClosed } from "react-icons/pi";
 import bfinitLogo from "../../assets/logo/bfinit-logo.png";
 import shapes1 from "../../assets/shapes/shapes-1.png";
 import rectangle from "../../assets/shapes/rectangle.png";
+import useAuth from "../../hooks/useAuth";
 
 export default function Login() {
+  const { setUser } = useAuth();
+
   const url = "https://api.blog.bfinit.com/api/v1/login";
   const navigate = useNavigate();
   const [showPass, setShowPass] = useState(false);
@@ -16,7 +19,6 @@ export default function Login() {
   const handleSubmit = (e) => {
     setLoading(true);
     e.preventDefault();
-
     const form = e.target;
     const email = form.email.value;
     const password = form.password.value;
@@ -32,13 +34,23 @@ export default function Login() {
         .then((res) => res.json())
         .then((data) => {
           if (data.status === "success") {
+            // Save to localStorage
             localStorage.setItem("bfinitBlogAccessToken", data.data.token);
+
+            // Update auth state - ADD THIS LINE
+            setUser(data.data.token);
+
             navigate("/dashboard/bitss");
             setLoading(false);
           } else {
             setLoading(false);
             alert(data.message);
           }
+        })
+        .catch((error) => {
+          console.error("Login error:", error);
+          setLoading(false);
+          alert("An error occurred during login");
         });
     }
   };

@@ -1,15 +1,21 @@
 import { useEffect, useState } from "react";
 import Loader from "../../components/Loader";
 import BitssTableRow from "../../components/BitssTableRow";
+import useAuth from "../../hooks/useAuth";
 
 export default function Bitss() {
+  const { user } = useAuth();
   const baseUrl = import.meta.env.VITE_Base_Url;
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
     const fetchOrders = async () => {
-      const res = await fetch(`${baseUrl}/payments/bitss/all`);
+      const res = await fetch(`${baseUrl}/payments/bitss/all`, {
+        headers: {
+          Authorization: `Bearer ${user}`,
+        },
+      });
       const data = await res.json();
       if (data.success === true) {
         setOrders(data.data);
