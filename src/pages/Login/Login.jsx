@@ -10,7 +10,7 @@ import useAuth from "../../hooks/useAuth";
 export default function Login() {
   const { setUser } = useAuth();
 
-  const url = "https://api.blog.bfinit.com/api/v1/login";
+  const url = "https://paymentapi.bfinit.com/api/v1/auth/user/login";
   const navigate = useNavigate();
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -33,14 +33,17 @@ export default function Login() {
       })
         .then((res) => res.json())
         .then((data) => {
-          if (data.status === "success") {
+          if (data.success) {
             // Save to localStorage
-            localStorage.setItem("bfinitBlogAccessToken", data.data.token);
+            localStorage.setItem(
+              "bfinitBlogAccessToken",
+              data.data.access_token
+            );
 
             // Update auth state - ADD THIS LINE
-            setUser(data.data.token);
+            setUser(data.data.access_token);
 
-            navigate("/dashboard/bitss");
+            navigate("/dashboard/bitss/orders");
             setLoading(false);
           } else {
             setLoading(false);
