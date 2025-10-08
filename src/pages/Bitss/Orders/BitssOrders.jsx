@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { FaSearch, FaEye, FaEdit, FaTrash } from "react-icons/fa";
 import useAuth from "../../../hooks/useAuth";
+import { Link } from "react-router";
 
 export default function BitssOrders() {
   const { user } = useAuth();
@@ -258,9 +259,12 @@ export default function BitssOrders() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-center gap-2">
-                        <button className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors">
+                        <Link
+                          to={`/dashboard/bitss/orders/${order.id}`}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                        >
                           <FaEye />
-                        </button>
+                        </Link>
                         <button className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors">
                           <FaEdit />
                         </button>

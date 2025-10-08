@@ -41,7 +41,7 @@ export default function Products() {
   const fetchCategories = async () => {
     try {
       const response = await fetch(
-        `${BASE_URL}/products/product/category-wise/products`,
+        `${BASE_URL}/products/product/category/index`,
         {
           headers: {
             Authorization: `Bearer ${user}`,
@@ -460,8 +460,8 @@ export default function Products() {
                   >
                     <option value="">Select category</option>
                     {categories.map((cat) => (
-                      <option key={cat._id} value={cat._id}>
-                        {cat.categoryName}
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
                       </option>
                     ))}
                   </select>

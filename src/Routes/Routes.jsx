@@ -6,6 +6,7 @@ import Login from "../pages/Login/Login";
 import PrivateRoute from "./PrivateRoute";
 import BitssOrders from "../pages/Bitss/Orders/BitssOrders";
 import BitssProducts from "../pages/Bitss/Products/BitssProducts";
+import OrderDetails from "../pages/Bitss/OrderDetails/OrderDetails";
 
 export const router = createBrowserRouter([
   {
@@ -37,12 +38,12 @@ export const router = createBrowserRouter([
         element: <BitssProducts />,
       },
       {
-        path: "/dashboard/bfinit/:orderId",
-        element: <div>BFINIT order details page</div>,
-      },
-      {
         path: "/dashboard/bitss/:orderId",
         element: <div>Bitss order details page</div>,
+      },
+      {
+        path: "/dashboard/bitss/orders/:orderId",
+        element: <OrderDetails />,
       },
     ],
   },
