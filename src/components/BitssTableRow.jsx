@@ -1,132 +1,228 @@
-import { useState } from "react";
 import { Link } from "react-router";
-import { FiEye } from "react-icons/fi";
-import { IoCheckmarkOutline, IoCloseOutline } from "react-icons/io5";
+import {
+  FaEye,
+  FaEdit,
+  FaTrash,
+  FaCheck,
+  FaTimes,
+  FaEllipsisV,
+} from "react-icons/fa";
+import { useState } from "react";
+import useAuth from "../hooks/useAuth";
 
-export default function BitssTableRow({ order, orders }) {
-  const [status, setStatus] = useState(order?.status);
-  const [showUpdateStatus, setShowUpdateStatus] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [isStatusConfirmed, setIsStatusConfirmed] = useState(
-    order?.status === "paid"
-  );
+export default function BitssTableRow({ order }) {
+  const { user: token } = useAuth();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const validTill = order?.valid_till ? new Date(order.valid_till) : null;
-  const formattedDate = validTill ? validTill.toISOString().split("T")[0] : "";
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  };
 
-  const handleStatusUpdate = (e) => {
-    const newStatus = e.target.value;
-    setStatus(newStatus);
-
-    if (newStatus !== order?.status) {
-      setShowUpdateStatus(true);
-    } else {
-      setShowUpdateStatus(false);
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "completed":
+        return "bg-green-100 text-green-700";
+      case "pending":
+        return "bg-yellow-100 text-yellow-700";
+      case "processing":
+        return "bg-blue-100 text-blue-700";
+      case "cancelled":
+        return "bg-red-100 text-red-700";
+      default:
+        return "bg-gray-100 text-gray-700";
     }
   };
 
-  const handleCancel = () => {
-    setStatus(order?.status);
-    setShowUpdateStatus(false);
+  const getPaymentStatusColor = (isPaid) => {
+    return isPaid
+      ? "bg-green-100 text-green-700"
+      : "bg-orange-100 text-orange-700";
   };
 
-  const handleConfirmStatusUpdate = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `${import.meta.env.VITE_Base_Url}/payments/bitss/payment/approved/${
-          order?._id
-        }`
+  const getPaymentMethodDisplay = (paymentType) => {
+    const methods = {
+      bank: "Bank Transfer",
+      bkash: "bKash",
+      nagad: "Nagad",
+      rocket: "Rocket",
+      card: "Card",
+      stripe: "Stripe",
+      paypal: "PayPal",
+    };
+    return methods[paymentType?.toLowerCase()] || paymentType || "N/A";
+  };
+
+  const calculateOrderTotal = (order) => {
+    if (order.invoices && order.invoices.length > 0) {
+      return `${order.currency} ${(
+        order.currency_rate * order.invoices[0].totalAmount
+      ).toFixed(2)}`;
+    }
+
+    if (order.products && order.products.length > 0) {
+      const total = order.products.reduce(
+        (sum, product) => sum + (product.price || 0),
+        0
       );
-      const data = await res.json();
+      return `${order.currency} ${(order.currency_rate * total).toFixed(2)}`;
+    }
 
-      if (data.success) {
-        setShowUpdateStatus(false);
-        setIsStatusConfirmed(true); // Mark as confirmed so select is disabled
-        const updatedOrder = orders.find((o) => o._id === order._id);
-        if (updatedOrder) {
-          updatedOrder.status = status; // fix: use string not boolean
+    return `${order.currency} 0.00`;
+  };
+
+  const getPaymentStatus = () => {
+    if (order.invoices && order.invoices.length > 0) {
+      return order.invoices[0].paid;
+    }
+    return false;
+  };
+
+  const getPaymentMethod = () => {
+    if (order.invoices && order.invoices.length > 0) {
+      return order.invoices[0].payment_type;
+    }
+    return null;
+  };
+
+  const handleApproveOrder = async () => {
+    if (!confirm("Are you sure you want to approve this order?")) {
+      return;
+    }
+
+    setIsLoading(true);
+    setShowDropdown(false);
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_Base_Url || ""}/orders/order/confirm/paid/${
+          order.id
+        }`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to approve order: ${response.statusText}`);
       }
+
+      const data = await response.json();
+      alert("Order approved successfully!");
+
+      window.location.reload();
     } catch (error) {
-      console.error(error);
+      console.error("Error approving order:", error);
+      alert(`Failed to approve order: ${error.message}`);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
+
+  const handleRejectOrder = () => {
+    setShowDropdown(false);
+    alert("Reject order functionality - To be implemented");
+  };
+
+  const isPaid = getPaymentStatus();
+  const paymentMethod = getPaymentMethod();
 
   return (
-    <tr className="border bg-white border-neutral-200 text-sm text-gray-600">
-      <td className="px-3 py-2 border border-neutral-200">
-        #{order?.order_id}
+    <tr className="hover:bg-neutral-50">
+      <td className="px-6 py-4 text-sm font-medium text-neutral-800">
+        {order.id}
       </td>
-      <td className="px-3 py-2 border border-neutral-200">
-        <span className="text-base font-medium">{order?.name}</span> <br />
-        <span className="text-neutral-500">{order?.email}</span>
+      <td className="px-6 py-4 text-sm text-neutral-600">{order.domain}</td>
+      <td className="px-6 py-4 text-sm text-neutral-600">
+        {formatDate(order.created_at)}
       </td>
-      <td className="px-3 py-2 border border-neutral-200">
-        <span className="text-base font-medium">{order?.software}</span> <br />
-        {formattedDate && `${formattedDate} Months`}
-      </td>
-      <td className="px-3 py-2 border border-neutral-200">
-        {order?.price} {order?.currencey}
-      </td>
-      <td className="px-3 flex justify-between items-center gap-1 py-2 capitalize">
-        <select
-          value={status}
-          onChange={handleStatusUpdate}
-          disabled={isStatusConfirmed || loading}
-          className={`px-2 py-1 rounded border border-neutral-200 focus:outline-none transition-colors duration-200 ${
-            status === "paid"
-              ? "bg-neutral-100 text-neutral-400"
-              : "cursor-pointer"
-          }`}
+      <td className="px-6 py-4">
+        <span
+          className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+            order.status
+          )}`}
         >
-          <option value="paid">Paid</option>
-          <option value="unpaid" disabled>
-            Unpaid
-          </option>
-        </select>
-
-        {/* Show update buttons only if status changed and not already confirmed */}
-        {showUpdateStatus && !isStatusConfirmed && (
-          <>
-            <button
-              disabled={loading}
-              onClick={handleConfirmStatusUpdate}
-              className={`border cursor-pointer rounded ${
-                loading
-                  ? "border-neutral-200 bg-neutral-100 text-neutral-400"
-                  : "border-green-500 bg-green-100 text-green-500"
-              }`}
-            >
-              <IoCheckmarkOutline className="text-lg" />
-            </button>
-            <button
-              onClick={handleCancel}
-              disabled={loading}
-              className={`border cursor-pointer rounded ${
-                loading
-                  ? "border-neutral-200 bg-neutral-100 text-neutral-400"
-                  : "border-red-500 bg-red-100 text-red-500"
-              }`}
-            >
-              <IoCloseOutline className="text-lg" />
-            </button>
-          </>
-        )}
+          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+        </span>
       </td>
-      <td className="px-3 py-2 border border-neutral-200">
-        <div className="flex h-full items-center justify-center gap-4">
+      <td className="px-6 py-4">
+        <span
+          className={`px-3 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(
+            isPaid
+          )}`}
+        >
+          {isPaid ? "✓ Paid" : "⏱ Unpaid"}
+        </span>
+      </td>
+      <td className="px-6 py-4 text-sm text-neutral-600">
+        {getPaymentMethodDisplay(paymentMethod)}
+      </td>
+      <td className="px-6 py-4 text-sm font-semibold text-neutral-800">
+        {calculateOrderTotal(order)}
+      </td>
+      <td className="px-6 py-4">
+        <div className="flex items-center justify-center gap-2">
           <Link
-            to={`/dashboard/bitss/${order?._id}`}
-            className="text-blue-500 hover:text-blue-700"
+            to={`/dashboard/bitss/orders/${order.id}`}
+            className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+            title="View Details"
           >
-            <FiEye className="h-5 w-5" />
+            <FaEye />
           </Link>
-          {/* <button className="text-red-500 hover:text-red-700">
-            <FiTrash2 className="h-5 w-5" />
-          </button> */}
+
+          <div className="relative">
+            <button
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="p-2 text-gray-600 hover:bg-gray-50 rounded transition-colors"
+              title="More Actions"
+              disabled={isLoading}
+            >
+              <FaEllipsisV />
+            </button>
+
+            {showDropdown && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowDropdown(false)}
+                />
+
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                  {order.status === "pending" && (
+                    <>
+                      <button
+                        onClick={handleApproveOrder}
+                        disabled={isLoading}
+                        className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 text-green-700 hover:bg-green-50 disabled:opacity-50`}
+                      >
+                        <FaCheck className={"text-green-600"} />
+                        {isLoading ? "Approving..." : "Approve Order"}
+                      </button>
+                      <hr className="my-1" />
+                    </>
+                  )}
+
+                  <button
+                    onClick={() => {
+                      setShowDropdown(false);
+                    }}
+                    className="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 flex items-center gap-2"
+                  >
+                    <FaTrash className="text-red-600" />
+                    Delete Order
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </td>
     </tr>

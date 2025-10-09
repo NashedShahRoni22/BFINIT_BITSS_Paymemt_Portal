@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { FaSearch, FaEye, FaEdit, FaTrash } from "react-icons/fa";
+import { FaSearch } from "react-icons/fa";
 import useAuth from "../../../hooks/useAuth";
-import { Link } from "react-router";
+
+import BitssTableRow from "../../../components/BitssTableRow";
 
 export default function BitssOrders() {
   const { user } = useAuth();
@@ -65,46 +66,6 @@ export default function BitssOrders() {
       order._id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.domain?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "completed":
-        return "bg-green-100 text-green-700";
-      case "pending":
-        return "bg-yellow-100 text-yellow-700";
-      case "processing":
-        return "bg-blue-100 text-blue-700";
-      case "cancelled":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-  };
-
-  const calculateOrderTotal = (order) => {
-    if (order.invoices && order.invoices.length > 0) {
-      return `$${order.invoices[0].totalAmount}`;
-    }
-
-    // Fallback: calculate from products
-    if (order.products && order.products.length > 0) {
-      const total = order.products.reduce(
-        (sum, product) => sum + (product.price || 0),
-        0
-      );
-      return `$${total}`;
-    }
-
-    return "$0.00";
-  };
 
   if (loading) {
     return (
@@ -198,9 +159,6 @@ export default function BitssOrders() {
                   Order ID
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-700">
-                  Order Number
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-700">
                   Domain
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-700">
@@ -208,6 +166,12 @@ export default function BitssOrders() {
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-700">
                   Status
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-700">
+                  Paymetn Status
+                </th>
+                <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-700">
+                  Paymetn Method
                 </th>
                 <th className="px-6 py-3 text-left text-sm font-semibold text-neutral-700">
                   Total
@@ -231,49 +195,7 @@ export default function BitssOrders() {
                 </tr>
               ) : (
                 filteredOrders.map((order) => (
-                  <tr key={order._id} className="hover:bg-neutral-50">
-                    <td className="px-6 py-4 text-sm font-medium text-neutral-800">
-                      {order._id}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-neutral-700">
-                      {order.order_number}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-neutral-600">
-                      {order.domain}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-neutral-600">
-                      {formatDate(order.created_at)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                          order.status
-                        )}`}
-                      >
-                        {order.status.charAt(0).toUpperCase() +
-                          order.status.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm font-semibold text-neutral-800">
-                      {calculateOrderTotal(order)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <Link
-                          to={`/dashboard/bitss/orders/${order.id}`}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                        >
-                          <FaEye />
-                        </Link>
-                        <button className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors">
-                          <FaEdit />
-                        </button>
-                        <button className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors">
-                          <FaTrash />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                  <BitssTableRow key={order._id} order={order} />
                 ))
               )}
             </tbody>
