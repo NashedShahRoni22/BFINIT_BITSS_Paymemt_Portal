@@ -91,7 +91,7 @@ export default function Sidebar({ showSidebar, toggleSidebar }) {
                   <p>
                     {navItem.DropDownIcon && (
                       <navItem.DropDownIcon
-                        className={`transition-transform duration-300 ease-in-out ${
+                        className={`transition-transform duration-300 ease-in-out text-sm ${
                           showSublinks === navItem.title
                             ? "-rotate-180"
                             : "rotate-0"

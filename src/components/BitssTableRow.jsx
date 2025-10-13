@@ -99,8 +99,7 @@ export default function BitssTableRow({ order }) {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_Base_Url || ""}/orders/order/confirm/paid/${
-          order.id
+        `${import.meta.env.VITE_Base_Url || ""}/orders/order/confirm/paid/${order.id
         }`,
         {
           method: "GET",
@@ -172,57 +171,30 @@ export default function BitssTableRow({ order }) {
         <div className="flex items-center justify-center gap-2">
           <Link
             to={`/dashboard/bitss/orders/${order.id}`}
-            className="p-2 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-            title="View Details"
+            className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
           >
             <FaEye />
+            <span>View Details</span>
           </Link>
 
-          <div className="relative">
+          {order.status === "pending" ? (
             <button
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="p-2 text-gray-600 hover:bg-gray-50 rounded transition-colors"
-              title="More Actions"
+              onClick={handleApproveOrder}
               disabled={isLoading}
+              className="cursor-pointer px-4 py-2 text-sm font-medium flex items-center gap-2 text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <FaEllipsisV />
+              <FaCheck className="text-green-600" />
+              {isLoading ? "Approving..." : "Approve"}
             </button>
-
-            {showDropdown && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setShowDropdown(false)}
-                />
-
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
-                  {order.status === "pending" && (
-                    <>
-                      <button
-                        onClick={handleApproveOrder}
-                        disabled={isLoading}
-                        className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 text-green-700 hover:bg-green-50 disabled:opacity-50`}
-                      >
-                        <FaCheck className={"text-green-600"} />
-                        {isLoading ? "Approving..." : "Approve Order"}
-                      </button>
-                      <hr className="my-1" />
-                    </>
-                  )}
-
-                  <button
-                    onClick={() => {
-                      setShowDropdown(false);
-                    }}
-                    className="w-full px-4 py-2 text-left text-sm text-red-700 hover:bg-red-50 flex items-center gap-2"
-                  >
-                    <FaTrash className="text-red-600" />
-                    Delete Order
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+          ) : (
+            <button
+              disabled
+              className="px-4 py-2 text-sm font-medium flex items-center gap-2 text-green-700 bg-green-50 rounded-lg opacity-60 cursor-not-allowed"
+            >
+              <FaCheck className="text-green-600" />
+              Approved
+            </button>
+          )}
         </div>
       </td>
     </tr>

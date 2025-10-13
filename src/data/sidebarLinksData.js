@@ -3,9 +3,16 @@ import { FaShoppingCart, FaChevronDown } from "react-icons/fa";
 
 export const sidebarLinksData = [
   {
-    title: "BFINIT",
-    link: "/dashboard/bfinit",
+    title: "Omada",
     icon: MdDashboard,
+    DropDownIcon: FaChevronDown,
+    subLinks: [
+      {
+        title: "Manage Orders",
+        link: "/dashboard/bfinit",
+        icon: FaShoppingCart,
+      },
+    ],
   },
   {
     title: "BITSS",
@@ -13,12 +20,12 @@ export const sidebarLinksData = [
     DropDownIcon: FaChevronDown,
     subLinks: [
       {
-        title: "Order Management",
+        title: "Manage Orders",
         link: "/dashboard/bitss/orders",
         icon: FaShoppingCart,
       },
       {
-        title: "Product & Category Management",
+        title: "Manage Products",
         link: "/dashboard/bitss/products",
         icon: MdCategory,
       },

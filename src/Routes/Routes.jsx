@@ -7,6 +7,7 @@ import PrivateRoute from "./PrivateRoute";
 import BitssOrders from "../pages/Bitss/Orders/BitssOrders";
 import BitssProducts from "../pages/Bitss/Products/BitssProducts";
 import OrderDetails from "../pages/Bitss/OrderDetails/OrderDetails";
+import NotFound from "../pages/NotFound/NotFound";
 
 export const router = createBrowserRouter([
   {
@@ -47,4 +48,8 @@ export const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path:"*",
+    element: <NotFound/>
+  }
 ]);
