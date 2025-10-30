@@ -10,12 +10,10 @@ export default function Sidebar({ showSidebar, toggleSidebar }) {
   const [showSublinks, setShowSublinks] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Toggle Sublinks on click
   const toggleSublinks = (title) => {
     setShowSublinks(showSublinks === title ? "" : title);
   };
 
-  // Handle Logout
   const handleLogout = () => {
     setLoading(true);
     fetch("https://api.blog.bfinit.com/api/v1/logout", {
@@ -27,101 +25,97 @@ export default function Sidebar({ showSidebar, toggleSidebar }) {
       .then((res) => res.json())
       .then((data) => {
         if (data.status === "success") {
-          setLoading(false);
           localStorage.removeItem("bfinitBlogAccessToken");
           window.location.href = "/";
         }
-        setLoading(false);
       })
-      .catch(() => {
-        setLoading(false);
-      });
+      .catch(() => {})
+      .finally(() => setLoading(false));
   };
 
   return (
     <nav
-      className={`bg-neutral-50 flex flex-col fixed right-0 top-0 z-10 h-screen max-h-[1080px] min-w-72 p-5 shadow-lg lg:static lg:block ${
-        showSidebar ? "block" : "hidden"
-      }`}
+      className={`fixed top-0 right-0 z-50 flex h-screen w-72 flex-col bg-white/90 backdrop-blur-lg shadow-xl border-l border-neutral-100 transition-transform duration-300 ease-in-out lg:static lg:translate-x-0
+        ${showSidebar ? "translate-x-0" : "translate-x-full"}`}
     >
-      <div>
-        {/* menu button */}
-        <div className="flex items-center justify-end">
-          <AiOutlineClose
-            onClick={toggleSidebar}
-            className="cursor-pointer text-2xl lg:hidden"
-          />
-        </div>
-
-        {/* logo */}
-        <Link to="/dashboard" className="hidden lg:block">
-          <img src={bfinitLogo} alt="bfinit logo" className="mx-auto w-20" />
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100">
+        <Link to="/dashboard" className="flex items-center gap-2">
+          <img src={bfinitLogo} alt="bfinit logo" className="w-1/2 mx-auto" />
         </Link>
+
+        <AiOutlineClose
+          onClick={toggleSidebar}
+          className="text-2xl text-neutral-500 cursor-pointer hover:text-neutral-800 lg:hidden"
+        />
       </div>
 
-      <ul className="mt-10 flex-1 space-y-4 overflow-y-auto">
+      {/* Links */}
+      <ul className="flex-1 overflow-y-auto px-4 py-6 space-y-2 scrollbar-thin scrollbar-thumb-neutral-200 scrollbar-track-transparent">
         {sidebarLinksData.map((navItem, i) => (
           <li key={i}>
             {navItem.link ? (
               <NavLink
                 to={navItem.link}
                 className={({ isActive }) =>
-                  `flex items-center gap-2 text-lg ${
+                  `flex items-center gap-3 rounded-lg px-3 py-2 text-base transition-all duration-200 ${
                     isActive
-                      ? "text-primary font-semibold"
-                      : "text-neutral-700 transition-all duration-200 ease-in-out hover:text-primary-hover"
+                      ? "bg-primary/10 text-primary font-semibold"
+                      : "text-neutral-700 hover:bg-neutral-100 hover:text-primary"
                   }`
                 }
               >
-                {navItem.icon && <navItem.icon className="text-xl" />}
+                {navItem.icon && <navItem.icon className="text-lg" />}
                 {navItem.title}
               </NavLink>
             ) : (
               <>
                 <button
                   onClick={() => toggleSublinks(navItem.title)}
-                  className="group flex w-full items-center justify-between text-lg cursor-pointer"
+                  className="group flex w-full items-center justify-between rounded-lg px-3 py-2 text-base text-neutral-700 hover:bg-neutral-100 hover:text-primary transition-all duration-200"
                 >
-                  <p className="flex items-center gap-2 text-neutral-700 group-hover:text-neutral-900">
+                  <span className="flex items-center gap-3">
                     {navItem.icon && (
-                      <navItem.icon className="text-primary text-xl" />
+                      <navItem.icon className="text-lg text-primary" />
                     )}
                     {navItem.title}
-                  </p>
-                  <p>
-                    {navItem.DropDownIcon && (
-                      <navItem.DropDownIcon
-                        className={`transition-transform duration-300 ease-in-out text-sm ${
-                          showSublinks === navItem.title
-                            ? "-rotate-180"
-                            : "rotate-0"
-                        }`}
-                      />
-                    )}
-                  </p>
+                  </span>
+                  {navItem.DropDownIcon && (
+                    <navItem.DropDownIcon
+                      className={`text-sm transition-transform duration-300 ${
+                        showSublinks === navItem.title
+                          ? "rotate-180 text-primary"
+                          : "rotate-0 text-neutral-500"
+                      }`}
+                    />
+                  )}
                 </button>
 
                 <div
                   className={`overflow-hidden transition-all duration-300 ${
-                    showSublinks === navItem.title ? "max-h-96 mt-2" : "max-h-0"
+                    showSublinks === navItem.title ? "max-h-64" : "max-h-0"
                   }`}
                 >
-                  {navItem.subLinks?.map((subLink, j) => (
-                    <NavLink
-                      key={j}
-                      to={subLink.link}
-                      className={({ isActive }) =>
-                        `flex items-center gap-2 pl-6 py-2 text-base transition-all duration-200 ${
-                          isActive
-                            ? "text-primary font-semibold"
-                            : "text-neutral-600 hover:text-primary-hover"
-                        }`
-                      }
-                    >
-                      {subLink.icon && <subLink.icon className="text-lg" />}
-                      {subLink.title}
-                    </NavLink>
-                  ))}
+                  <ul className="mt-1 space-y-1 pl-9">
+                    {navItem.subLinks?.map((subLink, j) => (
+                      <NavLink
+                        key={j}
+                        to={subLink.link}
+                        className={({ isActive }) =>
+                          `flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-all duration-200 ${
+                            isActive
+                              ? "text-primary font-semibold bg-primary/10"
+                              : "text-neutral-600 hover:text-primary hover:bg-neutral-100"
+                          }`
+                        }
+                      >
+                        {subLink.icon && (
+                          <subLink.icon className="text-base opacity-80" />
+                        )}
+                        {subLink.title}
+                      </NavLink>
+                    ))}
+                  </ul>
                 </div>
               </>
             )}
@@ -129,18 +123,27 @@ export default function Sidebar({ showSidebar, toggleSidebar }) {
         ))}
       </ul>
 
-      <button
-        disabled={loading}
-        onClick={handleLogout}
-        className={`flex mt-10 items-center cursor-pointer justify-center gap-2 text-lg font-semibold transition-all duration-200 ease-in-out text-white w-full rounded-md py-2 ${
-          loading ? "bg-primary/70" : "bg-primary hover:bg-primary-hover"
-        }`}
-      >
-        Log out{" "}
-        {loading && (
-          <LiaSpinnerSolid className="animate-spin text-2xl text-white" />
-        )}
-      </button>
+      {/* Logout */}
+      <div className="px-5 pb-5 border-t border-neutral-100">
+        <button
+          disabled={loading}
+          onClick={handleLogout}
+          className={`flex w-full items-center justify-center gap-2 rounded-md py-2.5 text-base font-medium text-white transition-all duration-200 ${
+            loading
+              ? "bg-primary/70"
+              : "bg-primary hover:bg-primary-hover shadow-sm"
+          }`}
+        >
+          {loading ? (
+            <>
+              <LiaSpinnerSolid className="animate-spin text-xl" />
+              Logging out...
+            </>
+          ) : (
+            "Log out"
+          )}
+        </button>
+      </div>
     </nav>
   );
 }

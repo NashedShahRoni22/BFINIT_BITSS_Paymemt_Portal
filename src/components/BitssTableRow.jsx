@@ -11,6 +11,8 @@ import { useState } from "react";
 import useAuth from "../hooks/useAuth";
 
 export default function BitssTableRow({ order }) {
+  console.log(order);
+  
   const { user: token } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -55,24 +57,6 @@ export default function BitssTableRow({ order }) {
       paypal: "PayPal",
     };
     return methods[paymentType?.toLowerCase()] || paymentType || "N/A";
-  };
-
-  const calculateOrderTotal = (order) => {
-    if (order.invoices && order.invoices.length > 0) {
-      return `${order.currency} ${(
-        order.currency_rate * order.invoices[0].totalAmount
-      ).toFixed(2)}`;
-    }
-
-    if (order.products && order.products.length > 0) {
-      const total = order.products.reduce(
-        (sum, product) => sum + (product.price || 0),
-        0
-      );
-      return `${order.currency} ${(order.currency_rate * total).toFixed(2)}`;
-    }
-
-    return `${order.currency} 0.00`;
   };
 
   const getPaymentStatus = () => {
@@ -161,11 +145,11 @@ export default function BitssTableRow({ order }) {
           {isPaid ? "✓ Paid" : "⏱ Unpaid"}
         </span>
       </td>
-      <td className="px-6 py-4 text-sm text-neutral-600">
+      <td className="px-6 py-4 text-sm text-neutral-600 capitalize">
         {getPaymentMethodDisplay(paymentMethod)}
       </td>
       <td className="px-6 py-4 text-sm font-semibold text-neutral-800">
-        {calculateOrderTotal(order)}
+        {order.currency} {order.totalPrice}
       </td>
       <td className="px-6 py-4">
         <div className="flex items-center justify-center gap-2">

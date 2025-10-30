@@ -13,6 +13,8 @@ export default function OrderDetails() {
   const { orderId } = useParams();
   const { user: token } = useAuth();
   const [order, setOrder] = useState(null);
+  console.log(order);
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -266,11 +268,7 @@ export default function OrderDetails() {
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-gray-800">
-                          ${item.price.toFixed(2)}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {order.currency}{" "}
-                          {(order.currency_rate * item.price).toFixed(2)}
+                          {order.currency} {item.subscription.amount}
                         </p>
                       </div>
                     </div>
@@ -279,7 +277,7 @@ export default function OrderDetails() {
                       <div>
                         <span className="text-gray-600">Subscription:</span>
                         <span className="ml-2 font-medium">
-                          {item.subscription.duration} month(s)
+                          {item.subscription.duration / 12 } year{item.subscription.duration / 12 > 1 ? `s` : ""}
                         </span>
                       </div>
                       <div>
@@ -340,7 +338,7 @@ export default function OrderDetails() {
               <div className="space-y-3">
                 <div className="flex justify-between text-gray-600">
                   <span>Subtotal ({order.products?.length} items)</span>
-                  <span>${calculateOrderSubtotal().toFixed(2)}</span>
+                  <span>{order.currency} {order?.totalPrice}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Currency Rate</span>
@@ -349,7 +347,7 @@ export default function OrderDetails() {
                 <div className="border-t pt-3 flex justify-between text-lg font-bold text-gray-800">
                   <span>Total</span>
                   <span>
-                    {order.currency} {calculateOrderTotal().toFixed(2)}
+                    {order.currency} {order?.totalPrice}
                   </span>
                 </div>
               </div>
