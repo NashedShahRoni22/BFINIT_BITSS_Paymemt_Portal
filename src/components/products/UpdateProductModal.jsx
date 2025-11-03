@@ -1,8 +1,209 @@
 import { useEffect, useState } from "react";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaBold, FaItalic, FaUnderline, FaStrikethrough, FaListUl, FaListOl, FaImage, FaLink, FaAlignLeft, FaAlignCenter, FaAlignRight, FaAlignJustify, FaUndo, FaRedo } from "react-icons/fa";
 import useAuth from "../../hooks/useAuth";
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { Image } from '@tiptap/extension-image';
+import { Link } from '@tiptap/extension-link';
+import { TextAlign } from '@tiptap/extension-text-align';
+import { Underline } from '@tiptap/extension-underline';
+import { TextStyle } from '@tiptap/extension-text-style';
+import { Color } from '@tiptap/extension-color';
+import { Highlight } from '@tiptap/extension-highlight';
 
 const BASE_URL = import.meta.env.VITE_Base_Url;
+
+// Menu Bar Component
+const MenuBar = ({ editor }) => {
+  if (!editor) return null;
+
+  const addImage = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const base64 = event.target.result;
+          editor.chain().focus().setImage({ src: base64 }).run();
+        };
+        reader.readAsDataURL(file);
+      }
+    };
+    input.click();
+  };
+
+  const addLink = () => {
+    const url = window.prompt('Enter URL');
+    if (url) {
+      editor.chain().focus().setLink({ href: url }).run();
+    }
+  };
+
+  return (
+    <div className="border-b border-gray-300 p-2 flex flex-wrap gap-1 bg-gray-50">
+      {/* Text Formatting */}
+      <button
+        onClick={() => editor.chain().focus().toggleBold().run()}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('bold') ? 'bg-gray-300' : ''}`}
+        type="button"
+        title="Bold"
+      >
+        <FaBold />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('italic') ? 'bg-gray-300' : ''}`}
+        type="button"
+        title="Italic"
+      >
+        <FaItalic />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleUnderline().run()}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('underline') ? 'bg-gray-300' : ''}`}
+        type="button"
+        title="Underline"
+      >
+        <FaUnderline />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleStrike().run()}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('strike') ? 'bg-gray-300' : ''}`}
+        type="button"
+        title="Strikethrough"
+      >
+        <FaStrikethrough />
+      </button>
+
+      <div className="w-px h-6 bg-gray-300 mx-1" />
+
+      {/* Headings */}
+      <button
+        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+        className={`p-2 rounded hover:bg-gray-200 text-sm font-bold ${editor.isActive('heading', { level: 1 }) ? 'bg-gray-300' : ''}`}
+        type="button"
+        title="Heading 1"
+      >
+        H1
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        className={`p-2 rounded hover:bg-gray-200 text-sm font-bold ${editor.isActive('heading', { level: 2 }) ? 'bg-gray-300' : ''}`}
+        type="button"
+        title="Heading 2"
+      >
+        H2
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+        className={`p-2 rounded hover:bg-gray-200 text-sm font-bold ${editor.isActive('heading', { level: 3 }) ? 'bg-gray-300' : ''}`}
+        type="button"
+        title="Heading 3"
+      >
+        H3
+      </button>
+
+      <div className="w-px h-6 bg-gray-300 mx-1" />
+
+      {/* Lists */}
+      <button
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('bulletList') ? 'bg-gray-300' : ''}`}
+        type="button"
+        title="Bullet List"
+      >
+        <FaListUl />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('orderedList') ? 'bg-gray-300' : ''}`}
+        type="button"
+        title="Numbered List"
+      >
+        <FaListOl />
+      </button>
+
+      <div className="w-px h-6 bg-gray-300 mx-1" />
+
+      {/* Alignment */}
+      <button
+        onClick={() => editor.chain().focus().setTextAlign('left').run()}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: 'left' }) ? 'bg-gray-300' : ''}`}
+        type="button"
+        title="Align Left"
+      >
+        <FaAlignLeft />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().setTextAlign('center').run()}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: 'center' }) ? 'bg-gray-300' : ''}`}
+        type="button"
+        title="Align Center"
+      >
+        <FaAlignCenter />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().setTextAlign('right').run()}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: 'right' }) ? 'bg-gray-300' : ''}`}
+        type="button"
+        title="Align Right"
+      >
+        <FaAlignRight />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: 'justify' }) ? 'bg-gray-300' : ''}`}
+        type="button"
+        title="Justify"
+      >
+        <FaAlignJustify />
+      </button>
+
+      <div className="w-px h-6 bg-gray-300 mx-1" />
+
+      {/* Media */}
+      <button
+        onClick={addImage}
+        className="p-2 rounded hover:bg-gray-200"
+        type="button"
+        title="Add Image"
+      >
+        <FaImage />
+      </button>
+      <button
+        onClick={addLink}
+        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('link') ? 'bg-gray-300' : ''}`}
+        type="button"
+        title="Add Link"
+      >
+        <FaLink />
+      </button>
+
+      <div className="w-px h-6 bg-gray-300 mx-1" />
+
+      {/* Undo/Redo */}
+      <button
+        onClick={() => editor.chain().focus().undo().run()}
+        className="p-2 rounded hover:bg-gray-200"
+        type="button"
+        title="Undo"
+      >
+        <FaUndo />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().redo().run()}
+        className="p-2 rounded hover:bg-gray-200"
+        type="button"
+        title="Redo"
+      >
+        <FaRedo />
+      </button>
+    </div>
+  );
+};
 
 export default function UpdateProductModal({ product, onClose, onUpdate, categories }) {
   const { user } = useAuth();
@@ -16,6 +217,30 @@ export default function UpdateProductModal({ product, onClose, onUpdate, categor
     subscription_periods: [],
   });
 
+  // Initialize TipTap Editor
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Underline,
+      Image,
+      Link.configure({
+        openOnClick: false,
+      }),
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
+      }),
+      TextStyle,
+      Color,
+      Highlight,
+    ],
+    content: '',
+    editorProps: {
+      attributes: {
+        class: 'prose prose-sm max-w-none focus:outline-none min-h-[250px] max-h-[400px] overflow-y-auto p-4',
+      },
+    },
+  });
+
   useEffect(() => {
     if (product) {
       setFormData({
@@ -26,8 +251,13 @@ export default function UpdateProductModal({ product, onClose, onUpdate, categor
         product_details: product.product_details || [""],
         subscription_periods: product.subscription_periods || [],
       });
+      
+      // Load existing description into editor
+      if (editor && product.description) {
+        editor.commands.setContent(product.description);
+      }
     }
-  }, [product]);
+  }, [product, editor]);
 
   // Handle product detail changes
   const handleProductDetailChange = (index, value) => {
@@ -97,9 +327,15 @@ export default function UpdateProductModal({ product, onClose, onUpdate, categor
       price: parseFloat(formData.price),
       status: formData.status,
       category: formData.category,
+      description: editor?.getHTML() || '', // Get HTML from editor
       product_details: filteredDetails,
       subscription_periods: formData.subscription_periods,
     };
+
+    // Print payload to console
+    console.log('=== UPDATE PRODUCT PAYLOAD ===');
+    console.log(JSON.stringify(productData, null, 2));
+    console.log('=============================');
 
     setLoading(true);
     try {
@@ -131,7 +367,7 @@ export default function UpdateProductModal({ product, onClose, onUpdate, categor
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-10">
           <h2 className="text-2xl font-bold text-gray-800">Update Product</h2>
           <button
             onClick={onClose}
@@ -209,6 +445,17 @@ export default function UpdateProductModal({ product, onClose, onUpdate, categor
                   </option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          {/* Rich Text Description Editor */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Product Description
+            </label>
+            <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
+              <MenuBar editor={editor} />
+              <EditorContent editor={editor} />
             </div>
           </div>
 
