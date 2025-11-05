@@ -1,15 +1,31 @@
-import { useState } from "react";
-import { FaTimes, FaBold, FaItalic, FaUnderline, FaStrikethrough, FaListUl, FaListOl, FaImage, FaLink, FaAlignLeft, FaAlignCenter, FaAlignRight, FaAlignJustify, FaUndo, FaRedo, FaHeading } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import {
+  FaTimes,
+  FaBold,
+  FaItalic,
+  FaUnderline,
+  FaStrikethrough,
+  FaListUl,
+  FaListOl,
+  FaImage,
+  FaLink,
+  FaAlignLeft,
+  FaAlignCenter,
+  FaAlignRight,
+  FaAlignJustify,
+  FaUndo,
+  FaRedo,
+} from "react-icons/fa";
 import useAuth from "../../hooks/useAuth";
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { Image } from '@tiptap/extension-image';
-import { Link } from '@tiptap/extension-link';
-import { TextAlign } from '@tiptap/extension-text-align';
-import { Underline } from '@tiptap/extension-underline';
-import { TextStyle } from '@tiptap/extension-text-style';
-import { Color } from '@tiptap/extension-color';
-import { Highlight } from '@tiptap/extension-highlight';
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { Image } from "@tiptap/extension-image";
+import { Link } from "@tiptap/extension-link";
+import { TextAlign } from "@tiptap/extension-text-align";
+import { Underline } from "@tiptap/extension-underline";
+import { TextStyle } from "@tiptap/extension-text-style";
+import { Color } from "@tiptap/extension-color";
+import { Highlight } from "@tiptap/extension-highlight";
 
 const BASE_URL = import.meta.env.VITE_Base_Url;
 
@@ -18,9 +34,9 @@ const MenuBar = ({ editor }) => {
   if (!editor) return null;
 
   const addImage = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
     input.onchange = (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -36,7 +52,7 @@ const MenuBar = ({ editor }) => {
   };
 
   const addLink = () => {
-    const url = window.prompt('Enter URL');
+    const url = window.prompt("Enter URL");
     if (url) {
       editor.chain().focus().setLink({ href: url }).run();
     }
@@ -47,7 +63,9 @@ const MenuBar = ({ editor }) => {
       {/* Text Formatting */}
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('bold') ? 'bg-gray-300' : ''}`}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive("bold") ? "bg-gray-300" : ""
+        }`}
         type="button"
         title="Bold"
       >
@@ -55,7 +73,9 @@ const MenuBar = ({ editor }) => {
       </button>
       <button
         onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('italic') ? 'bg-gray-300' : ''}`}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive("italic") ? "bg-gray-300" : ""
+        }`}
         type="button"
         title="Italic"
       >
@@ -63,7 +83,9 @@ const MenuBar = ({ editor }) => {
       </button>
       <button
         onClick={() => editor.chain().focus().toggleUnderline().run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('underline') ? 'bg-gray-300' : ''}`}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive("underline") ? "bg-gray-300" : ""
+        }`}
         type="button"
         title="Underline"
       >
@@ -71,7 +93,9 @@ const MenuBar = ({ editor }) => {
       </button>
       <button
         onClick={() => editor.chain().focus().toggleStrike().run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('strike') ? 'bg-gray-300' : ''}`}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive("strike") ? "bg-gray-300" : ""
+        }`}
         type="button"
         title="Strikethrough"
       >
@@ -83,7 +107,9 @@ const MenuBar = ({ editor }) => {
       {/* Headings */}
       <button
         onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-        className={`p-2 rounded hover:bg-gray-200 text-sm font-bold ${editor.isActive('heading', { level: 1 }) ? 'bg-gray-300' : ''}`}
+        className={`p-2 rounded hover:bg-gray-200 text-sm font-bold ${
+          editor.isActive("heading", { level: 1 }) ? "bg-gray-300" : ""
+        }`}
         type="button"
         title="Heading 1"
       >
@@ -91,7 +117,9 @@ const MenuBar = ({ editor }) => {
       </button>
       <button
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-        className={`p-2 rounded hover:bg-gray-200 text-sm font-bold ${editor.isActive('heading', { level: 2 }) ? 'bg-gray-300' : ''}`}
+        className={`p-2 rounded hover:bg-gray-200 text-sm font-bold ${
+          editor.isActive("heading", { level: 2 }) ? "bg-gray-300" : ""
+        }`}
         type="button"
         title="Heading 2"
       >
@@ -99,7 +127,9 @@ const MenuBar = ({ editor }) => {
       </button>
       <button
         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-        className={`p-2 rounded hover:bg-gray-200 text-sm font-bold ${editor.isActive('heading', { level: 3 }) ? 'bg-gray-300' : ''}`}
+        className={`p-2 rounded hover:bg-gray-200 text-sm font-bold ${
+          editor.isActive("heading", { level: 3 }) ? "bg-gray-300" : ""
+        }`}
         type="button"
         title="Heading 3"
       >
@@ -111,7 +141,9 @@ const MenuBar = ({ editor }) => {
       {/* Lists */}
       <button
         onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('bulletList') ? 'bg-gray-300' : ''}`}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive("bulletList") ? "bg-gray-300" : ""
+        }`}
         type="button"
         title="Bullet List"
       >
@@ -119,7 +151,9 @@ const MenuBar = ({ editor }) => {
       </button>
       <button
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('orderedList') ? 'bg-gray-300' : ''}`}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive("orderedList") ? "bg-gray-300" : ""
+        }`}
         type="button"
         title="Numbered List"
       >
@@ -130,32 +164,40 @@ const MenuBar = ({ editor }) => {
 
       {/* Alignment */}
       <button
-        onClick={() => editor.chain().focus().setTextAlign('left').run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: 'left' }) ? 'bg-gray-300' : ''}`}
+        onClick={() => editor.chain().focus().setTextAlign("left").run()}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive({ textAlign: "left" }) ? "bg-gray-300" : ""
+        }`}
         type="button"
         title="Align Left"
       >
         <FaAlignLeft />
       </button>
       <button
-        onClick={() => editor.chain().focus().setTextAlign('center').run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: 'center' }) ? 'bg-gray-300' : ''}`}
+        onClick={() => editor.chain().focus().setTextAlign("center").run()}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive({ textAlign: "center" }) ? "bg-gray-300" : ""
+        }`}
         type="button"
         title="Align Center"
       >
         <FaAlignCenter />
       </button>
       <button
-        onClick={() => editor.chain().focus().setTextAlign('right').run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: 'right' }) ? 'bg-gray-300' : ''}`}
+        onClick={() => editor.chain().focus().setTextAlign("right").run()}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive({ textAlign: "right" }) ? "bg-gray-300" : ""
+        }`}
         type="button"
         title="Align Right"
       >
         <FaAlignRight />
       </button>
       <button
-        onClick={() => editor.chain().focus().setTextAlign('justify').run()}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: 'justify' }) ? 'bg-gray-300' : ''}`}
+        onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive({ textAlign: "justify" }) ? "bg-gray-300" : ""
+        }`}
         type="button"
         title="Justify"
       >
@@ -175,7 +217,9 @@ const MenuBar = ({ editor }) => {
       </button>
       <button
         onClick={addLink}
-        className={`p-2 rounded hover:bg-gray-200 ${editor.isActive('link') ? 'bg-gray-300' : ''}`}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive("link") ? "bg-gray-300" : ""
+        }`}
         type="button"
         title="Add Link"
       >
@@ -208,14 +252,35 @@ const MenuBar = ({ editor }) => {
 export default function AddProductModal({ onClose, onAdd, categories }) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [allProducts, setAllProducts] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
     price: "",
     status: "available",
     category: "",
+    type: "single",
+    combo_products: [],
     product_details: [""],
     subscription_periods: [],
   });
+
+  useEffect(() => {
+    if (formData.type === "combo") {
+      fetchProducts();
+    }
+  }, [formData.type]);
+
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/products/product/all`, {
+        headers: { Authorization: `Bearer ${user}` },
+      });
+      const data = await res.json();
+      setAllProducts(data.data || []);
+    } catch (error) {
+      console.error("Failed to fetch products", error);
+    }
+  };
 
   // Initialize TipTap Editor
   const editor = useEditor({
@@ -227,16 +292,17 @@ export default function AddProductModal({ onClose, onAdd, categories }) {
         openOnClick: false,
       }),
       TextAlign.configure({
-        types: ['heading', 'paragraph'],
+        types: ["heading", "paragraph"],
       }),
       TextStyle,
       Color,
       Highlight,
     ],
-    content: '',
+    content: "",
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none focus:outline-none min-h-[250px] max-h-[400px] overflow-y-auto p-4',
+        class:
+          "prose prose-sm max-w-none focus:outline-none min-h-[250px] max-h-[400px] overflow-y-auto p-4",
       },
     },
   });
@@ -296,41 +362,39 @@ export default function AddProductModal({ onClose, onAdd, categories }) {
       product_details: [""],
       subscription_periods: [],
     });
-    editor?.commands.setContent('');
+    editor?.commands.setContent("");
   };
 
   // Create product
   const handleCreateProduct = async () => {
-    // Validation
     if (
       !formData.name ||
       !formData.price ||
       !formData.category ||
-      !formData.product_details.length > 0 ||
-      !formData.subscription_periods.length > 0
+      !formData.product_details.length ||
+      !formData.subscription_periods.length
     ) {
       alert("Please fill in all required fields");
       return;
     }
 
     const filteredDetails = formData.product_details.filter(
-      (detail) => detail.trim() !== ""
+      (x) => x.trim() !== ""
     );
 
-    const productData = {
+    const payload = {
       name: formData.name,
       price: parseFloat(formData.price),
       status: formData.status,
       category: formData.category,
-      description: editor?.getHTML() || '', // Get HTML from editor
+      description: editor?.getHTML() || "",
       product_details: filteredDetails,
       subscription_periods: formData.subscription_periods,
+      type: formData.type,
+      combo_products: formData.type === "combo" ? formData.combo_products : [],
     };
 
-    // Print payload to console
-    console.log('=== PRODUCT PAYLOAD ===');
-    console.log(JSON.stringify(productData, null, 2));
-    console.log('======================');
+    console.log("Payload: ", payload);
 
     setLoading(true);
     try {
@@ -340,7 +404,7 @@ export default function AddProductModal({ onClose, onAdd, categories }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${user}`,
         },
-        body: JSON.stringify(productData),
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();
@@ -348,12 +412,9 @@ export default function AddProductModal({ onClose, onAdd, categories }) {
         alert("Product created successfully!");
         onAdd();
         onClose();
-        resetForm();
-      } else {
-        alert(data.message || "Failed to create product");
-      }
-    } catch (error) {
-      console.error("Error creating product:", error);
+      } else alert(data.message || "Failed to create product");
+    } catch (err) {
+      console.error(err);
       alert("Failed to create product");
     } finally {
       setLoading(false);
@@ -377,6 +438,56 @@ export default function AddProductModal({ onClose, onAdd, categories }) {
         </div>
 
         <div className="p-6 space-y-6">
+          {/* Product Type */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Product Type
+            </label>
+            <select
+              value={formData.type}
+              onChange={(e) =>
+                setFormData({ ...formData, type: e.target.value })
+              }
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="single">Single</option>
+              <option value="combo">Combo</option>
+            </select>
+          </div>
+
+          {formData.type === "combo" && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Select Products
+              </label>
+              <div className="border border-gray-300 px-4 py-2 rounded-lg max-h-40 overflow-y-auto space-y-2">
+                {allProducts.map((p) => (
+                  <label
+                    key={p._id}
+                    className="flex items-center gap-2 text-sm"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.combo_products.includes(p._id)}
+                      onChange={() => {
+                        const exists = formData.combo_products.includes(p._id);
+                        setFormData({
+                          ...formData,
+                          combo_products: exists
+                            ? formData.combo_products.filter(
+                                (id) => id !== p._id
+                              )
+                            : [...formData.combo_products, p._id],
+                        });
+                      }}
+                    />
+                    {p.name}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -462,7 +573,8 @@ export default function AddProductModal({ onClose, onAdd, categories }) {
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="block text-sm font-medium text-gray-700">
-                Product Details / Features <span className="text-red-500">*</span>
+                Product Details / Features{" "}
+                <span className="text-red-500">*</span>
               </label>
               <button
                 onClick={addProductDetail}
@@ -531,7 +643,7 @@ export default function AddProductModal({ onClose, onAdd, categories }) {
                           )
                         }
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="e.g., 1 Month"
+                        placeholder="1 yr = 12 months"
                       />
                     </div>
                     <div>
