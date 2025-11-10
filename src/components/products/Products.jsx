@@ -172,7 +172,7 @@ export default function Products() {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm font-semibold text-gray-800">
-                        ${(product.price * 12).toFixed(2)} <span className="text-xs">/ year</span>
+                        €{(product.price * 12).toFixed(2)} <span className="text-xs">/ year</span>
                       </td>
                       <td className="px-6 py-4">
                         <span
