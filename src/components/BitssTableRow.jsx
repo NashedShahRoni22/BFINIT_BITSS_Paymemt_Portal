@@ -11,8 +11,6 @@ import { useState } from "react";
 import useAuth from "../hooks/useAuth";
 
 export default function BitssTableRow({ order }) {
-  console.log(order);
-  
   const { user: token } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -83,7 +81,8 @@ export default function BitssTableRow({ order }) {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_Base_Url || ""}/orders/order/confirm/paid/${order.id
+        `${import.meta.env.VITE_Base_Url || ""}/orders/order/confirm/paid/${
+          order.id
         }`,
         {
           method: "GET",

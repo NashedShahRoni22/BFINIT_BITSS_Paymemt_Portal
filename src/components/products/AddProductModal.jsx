@@ -394,8 +394,6 @@ export default function AddProductModal({ onClose, onAdd, categories }) {
       combo_products: formData.type === "combo" ? formData.combo_products : [],
     };
 
-    console.log("Payload: ", payload);
-
     setLoading(true);
     try {
       const response = await fetch(`${BASE_URL}/products/product/create`, {

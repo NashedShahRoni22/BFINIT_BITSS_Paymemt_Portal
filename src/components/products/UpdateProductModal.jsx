@@ -91,7 +91,9 @@ function CheckboxDropdown({ products = [], selected = [], setSelected }) {
         className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white text-left flex justify-between items-center hover:border-blue-500"
       >
         <span className="text-sm text-gray-700">
-          {selected.length > 0 ? `${selected.length} selected` : "Select Products"}
+          {selected.length > 0
+            ? `${selected.length} selected`
+            : "Select Products"}
         </span>
         <span className="text-gray-500">▼</span>
       </button>
@@ -156,52 +158,196 @@ const MenuBar = ({ editor }) => {
 
   return (
     <div className="border-b border-gray-300 p-2 flex flex-wrap gap-1 bg-gray-50">
-      <button onClick={() => editor.chain().focus().toggleBold().run()} className={`p-2 rounded hover:bg-gray-200 ${editor.isActive("bold") ? "bg-gray-300" : ""}`} type="button" title="Bold">
+      <button
+        onClick={() => editor.chain().focus().toggleBold().run()}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive("bold") ? "bg-gray-300" : ""
+        }`}
+        type="button"
+        title="Bold"
+      >
         <FaBold />
       </button>
-      <button onClick={() => editor.chain().focus().toggleItalic().run()} className={`p-2 rounded hover:bg-gray-200 ${editor.isActive("italic") ? "bg-gray-300" : ""}`} type="button" title="Italic">
+      <button
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive("italic") ? "bg-gray-300" : ""
+        }`}
+        type="button"
+        title="Italic"
+      >
         <FaItalic />
       </button>
-      <button onClick={() => editor.chain().focus().toggleUnderline().run()} className={`p-2 rounded hover:bg-gray-200 ${editor.isActive("underline") ? "bg-gray-300" : ""}`} type="button" title="Underline">
+      <button
+        onClick={() => editor.chain().focus().toggleUnderline().run()}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive("underline") ? "bg-gray-300" : ""
+        }`}
+        type="button"
+        title="Underline"
+      >
         <FaUnderline />
       </button>
-      <button onClick={() => editor.chain().focus().toggleStrike().run()} className={`p-2 rounded hover:bg-gray-200 ${editor.isActive("strike") ? "bg-gray-300" : ""}`} type="button" title="Strikethrough">
+      <button
+        onClick={() => editor.chain().focus().toggleStrike().run()}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive("strike") ? "bg-gray-300" : ""
+        }`}
+        type="button"
+        title="Strikethrough"
+      >
         <FaStrikethrough />
       </button>
 
       <div className="w-px h-6 bg-gray-300 mx-1" />
 
-      <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={`p-2 rounded hover:bg-gray-200 text-sm font-bold ${editor.isActive("heading", { level: 1 }) ? "bg-gray-300" : ""}`} type="button" title="Heading 1">H1</button>
-      <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={`p-2 rounded hover:bg-gray-200 text-sm font-bold ${editor.isActive("heading", { level: 2 }) ? "bg-gray-300" : ""}`} type="button" title="Heading 2">H2</button>
-      <button onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={`p-2 rounded hover:bg-gray-200 text-sm font-bold ${editor.isActive("heading", { level: 3 }) ? "bg-gray-300" : ""}`} type="button" title="Heading 3">H3</button>
+      <button
+        onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
+        className={`p-2 rounded hover:bg-gray-200 text-sm font-bold ${
+          editor.isActive("heading", { level: 1 }) ? "bg-gray-300" : ""
+        }`}
+        type="button"
+        title="Heading 1"
+      >
+        H1
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        className={`p-2 rounded hover:bg-gray-200 text-sm font-bold ${
+          editor.isActive("heading", { level: 2 }) ? "bg-gray-300" : ""
+        }`}
+        type="button"
+        title="Heading 2"
+      >
+        H2
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+        className={`p-2 rounded hover:bg-gray-200 text-sm font-bold ${
+          editor.isActive("heading", { level: 3 }) ? "bg-gray-300" : ""
+        }`}
+        type="button"
+        title="Heading 3"
+      >
+        H3
+      </button>
 
       <div className="w-px h-6 bg-gray-300 mx-1" />
 
-      <button onClick={() => editor.chain().focus().toggleBulletList().run()} className={`p-2 rounded hover:bg-gray-200 ${editor.isActive("bulletList") ? "bg-gray-300" : ""}`} type="button" title="Bullet List"><FaListUl /></button>
-      <button onClick={() => editor.chain().focus().toggleOrderedList().run()} className={`p-2 rounded hover:bg-gray-200 ${editor.isActive("orderedList") ? "bg-gray-300" : ""}`} type="button" title="Numbered List"><FaListOl /></button>
+      <button
+        onClick={() => editor.chain().focus().toggleBulletList().run()}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive("bulletList") ? "bg-gray-300" : ""
+        }`}
+        type="button"
+        title="Bullet List"
+      >
+        <FaListUl />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive("orderedList") ? "bg-gray-300" : ""
+        }`}
+        type="button"
+        title="Numbered List"
+      >
+        <FaListOl />
+      </button>
 
       <div className="w-px h-6 bg-gray-300 mx-1" />
 
-      <button onClick={() => editor.chain().focus().setTextAlign("left").run()} className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: "left" }) ? "bg-gray-300" : ""}`} type="button" title="Align Left"><FaAlignLeft /></button>
-      <button onClick={() => editor.chain().focus().setTextAlign("center").run()} className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: "center" }) ? "bg-gray-300" : ""}`} type="button" title="Align Center"><FaAlignCenter /></button>
-      <button onClick={() => editor.chain().focus().setTextAlign("right").run()} className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: "right" }) ? "bg-gray-300" : ""}`} type="button" title="Align Right"><FaAlignRight /></button>
-      <button onClick={() => editor.chain().focus().setTextAlign("justify").run()} className={`p-2 rounded hover:bg-gray-200 ${editor.isActive({ textAlign: "justify" }) ? "bg-gray-300" : ""}`} type="button" title="Justify"><FaAlignJustify /></button>
+      <button
+        onClick={() => editor.chain().focus().setTextAlign("left").run()}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive({ textAlign: "left" }) ? "bg-gray-300" : ""
+        }`}
+        type="button"
+        title="Align Left"
+      >
+        <FaAlignLeft />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().setTextAlign("center").run()}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive({ textAlign: "center" }) ? "bg-gray-300" : ""
+        }`}
+        type="button"
+        title="Align Center"
+      >
+        <FaAlignCenter />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().setTextAlign("right").run()}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive({ textAlign: "right" }) ? "bg-gray-300" : ""
+        }`}
+        type="button"
+        title="Align Right"
+      >
+        <FaAlignRight />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive({ textAlign: "justify" }) ? "bg-gray-300" : ""
+        }`}
+        type="button"
+        title="Justify"
+      >
+        <FaAlignJustify />
+      </button>
 
       <div className="w-px h-6 bg-gray-300 mx-1" />
 
-      <button onClick={addImage} className="p-2 rounded hover:bg-gray-200" type="button" title="Add Image"><FaImage /></button>
-      <button onClick={addLink} className={`p-2 rounded hover:bg-gray-200 ${editor.isActive("link") ? "bg-gray-300" : ""}`} type="button" title="Add Link"><FaLink /></button>
+      <button
+        onClick={addImage}
+        className="p-2 rounded hover:bg-gray-200"
+        type="button"
+        title="Add Image"
+      >
+        <FaImage />
+      </button>
+      <button
+        onClick={addLink}
+        className={`p-2 rounded hover:bg-gray-200 ${
+          editor.isActive("link") ? "bg-gray-300" : ""
+        }`}
+        type="button"
+        title="Add Link"
+      >
+        <FaLink />
+      </button>
 
       <div className="w-px h-6 bg-gray-300 mx-1" />
 
-      <button onClick={() => editor.chain().focus().undo().run()} className="p-2 rounded hover:bg-gray-200" type="button" title="Undo"><FaUndo /></button>
-      <button onClick={() => editor.chain().focus().redo().run()} className="p-2 rounded hover:bg-gray-200" type="button" title="Redo"><FaRedo /></button>
+      <button
+        onClick={() => editor.chain().focus().undo().run()}
+        className="p-2 rounded hover:bg-gray-200"
+        type="button"
+        title="Undo"
+      >
+        <FaUndo />
+      </button>
+      <button
+        onClick={() => editor.chain().focus().redo().run()}
+        className="p-2 rounded hover:bg-gray-200"
+        type="button"
+        title="Redo"
+      >
+        <FaRedo />
+      </button>
     </div>
   );
 };
 /* ------------------ End MenuBar ------------------ */
 
-export default function UpdateProductModal({ product, onClose, onUpdate, categories }) {
+export default function UpdateProductModal({
+  product,
+  onClose,
+  onUpdate,
+  categories,
+}) {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [allProducts, setAllProducts] = useState([]);
@@ -274,10 +420,16 @@ export default function UpdateProductModal({ product, onClose, onUpdate, categor
         price: product.price ?? "",
         status: product.status ?? "available",
         category: product.category ?? "",
-        product_details: product.product_details?.length ? product.product_details : [""],
-        subscription_periods: product.subscription_periods?.length ? product.subscription_periods : [],
+        product_details: product.product_details?.length
+          ? product.product_details
+          : [""],
+        subscription_periods: product.subscription_periods?.length
+          ? product.subscription_periods
+          : [],
         type: product.type ?? "single",
-        combo_products: Array.isArray(product.combo_products) ? product.combo_products.map(String) : [],
+        combo_products: Array.isArray(product.combo_products)
+          ? product.combo_products.map(String)
+          : [],
       });
 
       // load description into editor
@@ -327,7 +479,9 @@ export default function UpdateProductModal({ product, onClose, onUpdate, categor
   };
 
   const removeSubscriptionPeriod = (index) => {
-    const newSubscriptions = formData.subscription_periods.filter((_, i) => i !== index);
+    const newSubscriptions = formData.subscription_periods.filter(
+      (_, i) => i !== index
+    );
     setFormData({ ...formData, subscription_periods: newSubscriptions });
   };
 
@@ -339,7 +493,9 @@ export default function UpdateProductModal({ product, onClose, onUpdate, categor
       return;
     }
 
-    const filteredDetails = formData.product_details.filter((d) => d?.trim?.() !== "");
+    const filteredDetails = formData.product_details.filter(
+      (d) => d?.trim?.() !== ""
+    );
 
     const payload = {
       name: formData.name,
@@ -353,20 +509,19 @@ export default function UpdateProductModal({ product, onClose, onUpdate, categor
       combo_products: formData.type === "combo" ? formData.combo_products : [],
     };
 
-    console.log("=== UPDATE PRODUCT PAYLOAD ===");
-    console.log(JSON.stringify(payload, null, 2));
-    console.log("=============================");
-
     setLoading(true);
     try {
-      const response = await fetch(`${BASE_URL}/products/product/update/${product._id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${BASE_URL}/products/product/update/${product._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${user}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = await response.json();
       if (data.success) {
@@ -389,16 +544,25 @@ export default function UpdateProductModal({ product, onClose, onUpdate, categor
       <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-10">
           <h2 className="text-2xl font-bold text-gray-800">Update Product</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 text-2xl"
+          >
+            ×
+          </button>
         </div>
 
         <div className="p-6 space-y-6">
           {/* Type Selector */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Product Type</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Product Type
+            </label>
             <select
               value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, type: e.target.value })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-lg"
             >
               <option value="single">Single Product</option>
@@ -409,11 +573,15 @@ export default function UpdateProductModal({ product, onClose, onUpdate, categor
           {/* Combo Product Selector */}
           {formData.type === "combo" && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Select Products</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Products
+              </label>
               <CheckboxDropdown
                 products={allProducts}
                 selected={formData.combo_products}
-                setSelected={(v) => setFormData({ ...formData, combo_products: v })}
+                setSelected={(v) =>
+                  setFormData({ ...formData, combo_products: v })
+                }
               />
             </div>
           )}
@@ -421,29 +589,68 @@ export default function UpdateProductModal({ product, onClose, onUpdate, categor
           {/* Basic Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Product Name <span className="text-red-500">*</span></label>
-              <input type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter product name" />
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Product Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.name}
+                onChange={(e) =>
+                  setFormData({ ...formData, name: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter product name"
+              />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Price <span className="text-red-500">*</span></label>
-              <input type="number" step="0.01" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0.00" />
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Price <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                value={formData.price}
+                onChange={(e) =>
+                  setFormData({ ...formData, price: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="0.00"
+              />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Status <span className="text-red-500">*</span></label>
-              <select value={formData.status} onChange={(e) => setFormData({ ...formData, status: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Status <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formData.status}
+                onChange={(e) =>
+                  setFormData({ ...formData, status: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
                 <option value="available">Available</option>
                 <option value="unavailable">Unavailable</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Category <span className="text-red-500">*</span></label>
-              <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Category <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={formData.category}
+                onChange={(e) =>
+                  setFormData({ ...formData, category: e.target.value })
+                }
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
                 <option value="">Select category</option>
                 {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -451,7 +658,9 @@ export default function UpdateProductModal({ product, onClose, onUpdate, categor
 
           {/* Rich Text Description Editor */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Product Description</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Product Description
+            </label>
             <div className="border border-gray-300 rounded-lg overflow-hidden bg-white">
               <MenuBar editor={editor} />
               <EditorContent editor={editor} />
@@ -461,15 +670,34 @@ export default function UpdateProductModal({ product, onClose, onUpdate, categor
           {/* Product Details */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium text-gray-700">Product Details / Features <span className="text-red-500">*</span></label>
-              <button onClick={addProductDetail} className="text-sm text-blue-600 hover:text-blue-700 font-medium">+ Add Feature</button>
+              <label className="block text-sm font-medium text-gray-700">
+                Product Details / Features{" "}
+                <span className="text-red-500">*</span>
+              </label>
+              <button
+                onClick={addProductDetail}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                + Add Feature
+              </button>
             </div>
             <div className="space-y-2">
               {formData.product_details.map((detail, index) => (
                 <div key={index} className="flex gap-2">
-                  <input type="text" value={detail} onChange={(e) => handleProductDetailChange(index, e.target.value)} className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter feature or detail" />
+                  <input
+                    type="text"
+                    value={detail}
+                    onChange={(e) =>
+                      handleProductDetailChange(index, e.target.value)
+                    }
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter feature or detail"
+                  />
                   {formData.product_details.length > 1 && (
-                    <button onClick={() => removeProductDetail(index)} className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors">
+                    <button
+                      onClick={() => removeProductDetail(index)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                    >
                       <FaTimes />
                     </button>
                   )}
@@ -481,42 +709,115 @@ export default function UpdateProductModal({ product, onClose, onUpdate, categor
           {/* Subscription Periods */}
           <div>
             <div className="flex justify-between items-center mb-2">
-              <label className="block text-sm font-medium text-gray-700">Subscription Periods <span className="text-red-500">*</span></label>
-              <button onClick={addSubscriptionPeriod} className="text-sm text-blue-600 hover:text-blue-700 font-medium">+ Add Subscription</button>
+              <label className="block text-sm font-medium text-gray-700">
+                Subscription Periods <span className="text-red-500">*</span>
+              </label>
+              <button
+                onClick={addSubscriptionPeriod}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                + Add Subscription
+              </button>
             </div>
             <div className="space-y-3">
               {formData.subscription_periods.map((sub, index) => (
-                <div key={index} className="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <div
+                  key={index}
+                  className="p-4 border border-gray-200 rounded-lg bg-gray-50"
+                >
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Duration</label>
-                      <input type="text" value={sub.duration} onChange={(e) => handleSubscriptionChange(index, "duration", e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="e.g., 1 Year" />
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Duration
+                      </label>
+                      <input
+                        type="text"
+                        value={sub.duration}
+                        onChange={(e) =>
+                          handleSubscriptionChange(
+                            index,
+                            "duration",
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., 1 Year"
+                      />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Discount Type</label>
-                      <select value={sub.discount_type} onChange={(e) => handleSubscriptionChange(index, "discount_type", e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Discount Type
+                      </label>
+                      <select
+                        value={sub.discount_type}
+                        onChange={(e) =>
+                          handleSubscriptionChange(
+                            index,
+                            "discount_type",
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
                         <option value="percent">Percent (%)</option>
                         <option value="flat">Flat ($)</option>
                       </select>
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Amount</label>
-                      <input type="number" step="0.01" value={sub.amount} onChange={(e) => handleSubscriptionChange(index, "amount", e.target.value)} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0" />
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        Amount
+                      </label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={sub.amount}
+                        onChange={(e) =>
+                          handleSubscriptionChange(
+                            index,
+                            "amount",
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="0"
+                      />
                     </div>
                     <div className="flex items-end">
-                      <button onClick={() => removeSubscriptionPeriod(index)} className="w-full px-3 py-2 text-sm bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors">Remove</button>
+                      <button
+                        onClick={() => removeSubscriptionPeriod(index)}
+                        className="w-full px-3 py-2 text-sm bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
+                      >
+                        Remove
+                      </button>
                     </div>
                   </div>
                 </div>
               ))}
-              {formData.subscription_periods.length === 0 && <p className="text-sm text-gray-500 text-center py-4">No subscription periods added yet</p>}
+              {formData.subscription_periods.length === 0 && (
+                <p className="text-sm text-gray-500 text-center py-4">
+                  No subscription periods added yet
+                </p>
+              )}
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="flex gap-3 pt-4 border-t border-gray-200">
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium">Cancel</button>
-            <button type="button" onClick={handleUpdateProduct} disabled={loading} className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed">{loading ? "Updating..." : "Update Product"}</button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleUpdateProduct}
+              disabled={loading}
+              className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "Updating..." : "Update Product"}
+            </button>
           </div>
         </div>
       </div>
