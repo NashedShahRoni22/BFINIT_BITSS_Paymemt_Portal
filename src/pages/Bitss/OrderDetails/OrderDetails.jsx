@@ -13,6 +13,7 @@ export default function OrderDetails() {
   const { orderId } = useParams();
   const { user: token } = useAuth();
   const [order, setOrder] = useState(null);
+  console.log(order);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -265,7 +266,7 @@ export default function OrderDetails() {
                       </div>
                       <div className="text-right">
                         <p className="font-bold text-gray-800">
-                          {order.currency} {item.subscription.amount}
+                          {order.currency} {(item.price * item.period).toFixed(2)}
                         </p>
                       </div>
                     </div>
