@@ -1,4 +1,9 @@
-import { MdDashboard, MdInventory, MdCategory } from "react-icons/md";
+import {
+  MdDashboard,
+  MdInventory,
+  MdCategory,
+  MdRefresh,
+} from "react-icons/md";
 import { FaShoppingCart, FaChevronDown } from "react-icons/fa";
 
 export const sidebarLinksData = [
@@ -28,6 +33,11 @@ export const sidebarLinksData = [
         title: "Manage Products",
         link: "/dashboard/bitss/products",
         icon: MdCategory,
+      },
+      {
+        title: "Renew Orders",
+        link: "/dashboard/bitss/renew",
+        icon: MdRefresh,
       },
     ],
   },

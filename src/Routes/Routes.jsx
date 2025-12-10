@@ -8,6 +8,8 @@ import BitssOrders from "../pages/Bitss/Orders/BitssOrders";
 import BitssProducts from "../pages/Bitss/Products/BitssProducts";
 import OrderDetails from "../pages/Bitss/OrderDetails/OrderDetails";
 import NotFound from "../pages/NotFound/NotFound";
+import RenewOrders from "../pages/Bitss/Renew/RenewOrders";
+import RenewDetails from "../pages/Bitss/RenewDetails/RenewDetails";
 
 export const router = createBrowserRouter([
   {
@@ -46,10 +48,18 @@ export const router = createBrowserRouter([
         path: "/dashboard/bitss/orders/:orderId",
         element: <OrderDetails />,
       },
+      {
+        path: "/dashboard/bitss/renew",
+        element: <RenewOrders />,
+      },
+      {
+        path: "/dashboard/bitss/renew/:invoiceId",
+        element: <RenewDetails />,
+      },
     ],
   },
   {
-    path:"*",
-    element: <NotFound/>
-  }
+    path: "*",
+    element: <NotFound />,
+  },
 ]);
