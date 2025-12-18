@@ -20,6 +20,7 @@ export default function RenewOrders() {
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [expandedOrders, setExpandedOrders] = useState({});
+  const [paymentStatus, setPaymentStatus] = useState("inactive"); // inactive by default
 
   // Get initial filters from URL
   const getFiltersFromURL = () => {
@@ -61,6 +62,12 @@ export default function RenewOrders() {
       if (filtersToUse.orderNumber)
         params.append("order_number", filtersToUse.orderNumber);
 
+      // Add payment_status based on selected filter
+      if (paymentStatus === "paid") {
+        params.append("payment_status", "paid");
+      }
+      // For inactive (default), no payment_status param is sent
+
       const response = await fetch(
         `https://backend.bitss.one/api/v1/orders/order/renew/list?${params.toString()}`,
         {
@@ -86,7 +93,7 @@ export default function RenewOrders() {
 
   useEffect(() => {
     fetchRenewOrders();
-  }, []);
+  }, [paymentStatus]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -109,6 +116,7 @@ export default function RenewOrders() {
       orderNumber: "",
     };
     setFilters(clearedFilters);
+    setPaymentStatus("inactive");
     updateURL(clearedFilters);
     fetchRenewOrders(clearedFilters);
   };
@@ -190,12 +198,40 @@ export default function RenewOrders() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto p-6">
-        {/* Header */}
+        {/* Header with Payment Status Toggle */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Renew Orders
-          </h1>
-          <p className="text-gray-600">Track and manage renewal orders</p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Renew Orders
+              </h1>
+              <p className="text-gray-600">Track and manage renewal orders</p>
+            </div>
+
+            {/* Payment Status Toggle Buttons */}
+            <div className="flex items-center gap-2 bg-white rounded-lg shadow-sm border border-gray-200 p-1">
+              <button
+                onClick={() => setPaymentStatus("inactive")}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                  paymentStatus === "inactive"
+                    ? "bg-orange-600 text-white shadow-sm"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                Pending Renewals
+              </button>
+              <button
+                onClick={() => setPaymentStatus("paid")}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                  paymentStatus === "paid"
+                    ? "bg-green-600 text-white shadow-sm"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                Active Renewals
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Stats Cards */}
@@ -515,7 +551,7 @@ export default function RenewOrders() {
                                   <Eye className="w-4 h-4" />
                                   View
                                 </Link>
-                                {!order.invoices[0].paid && (
+                                {/* {!order.invoices[0].paid && (
                                   <button
                                     onClick={() =>
                                       handleApproveOrder(order.invoices[0]._id)
@@ -525,7 +561,7 @@ export default function RenewOrders() {
                                     <CheckCircle className="w-4 h-4" />
                                     Approve
                                   </button>
-                                )}
+                                )} */}
                               </div>
                             )}
                           </td>
@@ -594,7 +630,7 @@ export default function RenewOrders() {
                                             <Eye className="w-3 h-3" />
                                             View
                                           </Link>
-                                          {!invoice.paid && (
+                                          {/* {!invoice.paid && (
                                             <button
                                               onClick={() =>
                                                 handleApproveOrder(invoice._id)
@@ -604,7 +640,7 @@ export default function RenewOrders() {
                                               <CheckCircle className="w-3 h-3" />
                                               Approve
                                             </button>
-                                          )}
+                                          )} */}
                                         </div>
                                       </div>
                                     </div>

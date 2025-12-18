@@ -1,6 +1,14 @@
 import { useState, useEffect } from "react";
-import { Filter, X, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import {
+  Filter,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
+  Eye,
+} from "lucide-react";
 import useAuth from "../../../hooks/useAuth";
+import { Link } from "react-router";
 
 export default function BitssOrders() {
   const { user } = useAuth();
@@ -389,7 +397,7 @@ export default function BitssOrders() {
         )}
 
         {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        {/* <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
           <div className="p-4 border-b border-gray-200 flex items-center justify-between">
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -520,7 +528,7 @@ export default function BitssOrders() {
               </div>
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Table */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -563,7 +571,7 @@ export default function BitssOrders() {
                     User
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                    Product
+                    Products
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Status
@@ -571,13 +579,16 @@ export default function BitssOrders() {
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                     Date
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {loading ? (
                   <tr>
                     <td
-                      colSpan="6"
+                      colSpan="7"
                       className="px-6 py-12 text-center text-gray-500"
                     >
                       <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-2" />
@@ -587,7 +598,7 @@ export default function BitssOrders() {
                 ) : currentItems.length === 0 ? (
                   <tr>
                     <td
-                      colSpan="6"
+                      colSpan="7"
                       className="px-6 py-12 text-center text-gray-500"
                     >
                       No orders found
@@ -601,36 +612,53 @@ export default function BitssOrders() {
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-medium text-gray-900">
-                          {activeTab === "online"
-                            ? order.order_number
-                            : order.order_number}
+                          {order.order_number}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm text-gray-700">
-                          {activeTab === "online" ? order.domain : order.domain}
+                          {order.domain}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="text-sm">
                           <div className="font-medium text-gray-900">
-                            {activeTab === "online"
-                              ? order.user?.name
-                              : order.user?.name}
+                            {order.user?.name || "N/A"}
                           </div>
                           <div className="text-gray-500 text-xs">
-                            {activeTab === "online"
-                              ? order.user?.email
-                              : order.user?.email}
+                            {order.user?.email || order.user || "N/A"}
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-gray-700">
-                          {activeTab === "online"
-                            ? order.product?.name
-                            : order.package?.name}
-                        </span>
+                      <td className="px-6 py-4">
+                        <div className="text-sm">
+                          {activeTab === "online" ? (
+                            order.products && order.products.length > 0 ? (
+                              <div className="space-y-1">
+                                {order.products.map((productItem, idx) => (
+                                  <div
+                                    key={productItem._id || idx}
+                                    className="text-gray-700"
+                                  >
+                                    {productItem.product?.name ||
+                                      "Unknown Product"}
+                                    {order.products.length > 1 && (
+                                      <span className="text-gray-400 ml-1">
+                                        ({idx + 1}/{order.products.length})
+                                      </span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-gray-400">No products</span>
+                            )
+                          ) : (
+                            <span className="text-gray-700">
+                              {order.package?.name || "N/A"}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
@@ -662,6 +690,15 @@ export default function BitssOrders() {
                         <span className="text-sm text-gray-700">
                           {formatDate(order.createdAt)}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Link
+                          to={`/dashboard/bitss/orders/${order.id}`}
+                          className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
+                        >
+                          <Eye className="w-4 h-4" />
+                          View
+                        </Link>
                       </td>
                     </tr>
                   ))

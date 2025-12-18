@@ -4,33 +4,15 @@ import { AiOutlineClose } from "react-icons/ai";
 import { LiaSpinnerSolid } from "react-icons/lia";
 import { sidebarLinksData } from "../../data/sidebarLinksData";
 import bfinitLogo from "../../assets/logo/bfinit-logo.png";
+import useAuth from "../../hooks/useAuth";
 
 export default function Sidebar({ showSidebar, toggleSidebar }) {
-  const accessToken = localStorage.getItem("bfinitBlogAccessToken");
+  const { handleLogout } = useAuth();
   const [showSublinks, setShowSublinks] = useState("");
   const [loading, setLoading] = useState(false);
 
   const toggleSublinks = (title) => {
     setShowSublinks(showSublinks === title ? "" : title);
-  };
-
-  const handleLogout = () => {
-    setLoading(true);
-    fetch("https://api.blog.bfinit.com/api/v1/logout", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.status === "success") {
-          localStorage.removeItem("bfinitBlogAccessToken");
-          window.location.href = "/";
-        }
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
   };
 
   return (

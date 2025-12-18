@@ -41,10 +41,6 @@ export const router = createBrowserRouter([
         element: <BitssProducts />,
       },
       {
-        path: "/dashboard/bitss/:orderId",
-        element: <div>Bitss order details page</div>,
-      },
-      {
         path: "/dashboard/bitss/orders/:orderId",
         element: <OrderDetails />,
       },
