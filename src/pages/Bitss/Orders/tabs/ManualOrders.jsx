@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, RefreshCw, Eye } from "lucide-react";
-import { Link } from "react-router";
+import {
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
+  CheckCircle,
+  Loader2,
+} from "lucide-react";
 
 export default function ManualOrders({ user, baseUrl, onCountChange }) {
   const [orders, setOrders] = useState([]);
@@ -8,6 +13,9 @@ export default function ManualOrders({ user, baseUrl, onCountChange }) {
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  const [statusMap, setStatusMap] = useState({});
+  const [updatingId, setUpdatingId] = useState(null);
 
   const fetchOrders = async () => {
     try {
@@ -24,6 +32,13 @@ export default function ManualOrders({ user, baseUrl, onCountChange }) {
       if (result.success) {
         setOrders(result.data);
         onCountChange(result.data.length);
+
+        // Initialize status map from current order statuses
+        const initial = {};
+        result.data.forEach((order) => {
+          initial[order._id] = order.order_status || "pending";
+        });
+        setStatusMap(initial);
       } else {
         throw new Error(result.message || "Failed to fetch manual orders");
       }
@@ -37,6 +52,45 @@ export default function ManualOrders({ user, baseUrl, onCountChange }) {
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  const handleStatusUpdate = async (order) => {
+    const newStatus = statusMap[order._id];
+    if (!newStatus || newStatus === order.order_status) return;
+
+    try {
+      setUpdatingId(order._id);
+
+      const response = await fetch(
+        `${baseUrl}/orders/order/retail/package/status/?id=${order._id}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${user}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ order_status: newStatus }),
+        },
+      );
+
+      if (!response.ok) throw new Error(`Update failed: ${response.status}`);
+
+      const result = await response.json();
+      if (result.success) {
+        // Update local order status
+        setOrders((prev) =>
+          prev.map((o) =>
+            o._id === order._id ? { ...o, order_status: newStatus } : o,
+          ),
+        );
+      } else {
+        throw new Error(result.message || "Update failed");
+      }
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+    } finally {
+      setUpdatingId(null);
+    }
+  };
 
   // Stats
   const totalOrders = orders.length;
@@ -65,6 +119,22 @@ export default function ManualOrders({ user, baseUrl, onCountChange }) {
     });
   };
 
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case "pending":
+        return "bg-yellow-100 text-yellow-800";
+      case "processing":
+        return "bg-blue-100 text-blue-800";
+      case "completed":
+        return "bg-green-100 text-green-800";
+      case "cancle":
+      case "cancelled":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
   const getPageNumbers = () => {
     const pageNumbers = [];
     if (totalPages <= 5) {
@@ -82,21 +152,6 @@ export default function ManualOrders({ user, baseUrl, onCountChange }) {
       pageNumbers.push("...", totalPages);
     }
     return pageNumbers;
-  };
-
-  const getStatusStyle = (status) => {
-    switch (status) {
-      case "pending":
-        return "bg-yellow-100 text-yellow-800";
-      case "processing":
-        return "bg-blue-100 text-blue-800";
-      case "completed":
-        return "bg-green-100 text-green-800";
-      case "cancelled":
-        return "bg-red-100 text-red-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
   };
 
   return (
@@ -128,6 +183,13 @@ export default function ManualOrders({ user, baseUrl, onCountChange }) {
           </div>
         ))}
       </div>
+
+      {/* Error */}
+      {error && (
+        <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -166,8 +228,9 @@ export default function ManualOrders({ user, baseUrl, onCountChange }) {
                   "Product",
                   "Subscription",
                   "Price",
-                  "Status",
+                  "Current Status",
                   "Date",
+                  "Update Status",
                 ].map((h) => (
                   <th
                     key={h}
@@ -199,82 +262,124 @@ export default function ManualOrders({ user, baseUrl, onCountChange }) {
                   </td>
                 </tr>
               ) : (
-                currentItems.map((order) => (
-                  <tr
-                    key={order._id}
-                    className="hover:bg-gray-50 transition-colors"
-                  >
-                    {/* Customer */}
-                    <td className="px-6 py-4">
-                      <div className="text-sm">
-                        <div className="font-medium text-gray-900">
-                          {order.full_name || "N/A"}
-                        </div>
-                        <div className="text-gray-500 text-xs">
-                          {order.country || "N/A"}
-                        </div>
-                      </div>
-                    </td>
+                currentItems.map((order) => {
+                  const isUpdating = updatingId === order._id;
+                  const selectedStatus =
+                    statusMap[order._id] || order.order_status;
+                  const isUnchanged = selectedStatus === order.order_status;
 
-                    {/* Contact */}
-                    <td className="px-6 py-4">
-                      <div className="text-sm">
-                        <div className="text-gray-700">
-                          {order.email || "N/A"}
+                  return (
+                    <tr
+                      key={order._id}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      {/* Customer */}
+                      <td className="px-6 py-4">
+                        <div className="text-sm">
+                          <div className="font-medium text-gray-900">
+                            {order.full_name || "N/A"}
+                          </div>
+                          <div className="text-gray-500 text-xs">
+                            {order.country || "N/A"}
+                          </div>
                         </div>
-                        <div className="text-gray-500 text-xs">
-                          {order.phone || "N/A"}
+                      </td>
+
+                      {/* Contact */}
+                      <td className="px-6 py-4">
+                        <div className="text-sm">
+                          <div className="text-gray-700">
+                            {order.email || "N/A"}
+                          </div>
+                          <div className="text-gray-500 text-xs">
+                            {order.phone || "N/A"}
+                          </div>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    {/* Product */}
-                    <td className="px-6 py-4 max-w-xs">
-                      <span
-                        className="text-sm text-gray-700 block truncate"
-                        title={order.product?.name}
-                      >
-                        {order.product?.name || "N/A"}
-                      </span>
-                    </td>
+                      {/* Product */}
+                      <td className="px-6 py-4 max-w-xs">
+                        <span
+                          className="text-sm text-gray-700 block truncate"
+                          title={order.product?.name}
+                        >
+                          {order.product?.name || "N/A"}
+                        </span>
+                      </td>
 
-                    {/* Subscription */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm">
-                        <div className="text-gray-700">
-                          {order.subscription?.duration} months
+                      {/* Subscription */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm">
+                          <div className="text-gray-700">
+                            {order.subscription?.duration} months
+                          </div>
+                          <div className="text-gray-500 text-xs">
+                            {order.subscription?.amount}%{" "}
+                            {order.subscription?.discount_type} off
+                          </div>
                         </div>
-                        <div className="text-gray-500 text-xs">
-                          {order.subscription?.amount}%{" "}
-                          {order.subscription?.discount_type} off
+                      </td>
+
+                      {/* Price */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm font-medium text-gray-900">
+                          ${order.package_price?.toFixed(2)}
+                        </span>
+                      </td>
+
+                      {/* Current Status Badge */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-3 py-1 inline-flex text-xs font-semibold rounded-full ${getStatusStyle(order.order_status)}`}
+                        >
+                          {order.order_status}
+                        </span>
+                      </td>
+
+                      {/* Date */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-700">
+                          {formatDate(order.createdAt)}
+                        </span>
+                      </td>
+
+                      {/* Update Status */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={selectedStatus}
+                            onChange={(e) =>
+                              setStatusMap((prev) => ({
+                                ...prev,
+                                [order._id]: e.target.value,
+                              }))
+                            }
+                            disabled={isUpdating}
+                            className="px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none disabled:opacity-50"
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="completed">Completed</option>
+                            <option value="cancle">Cancelled</option>
+                          </select>
+
+                          <button
+                            onClick={() => handleStatusUpdate(order)}
+                            disabled={isUpdating || isUnchanged}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            {isUpdating ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <CheckCircle className="w-3.5 h-3.5" />
+                            )}
+                            {isUpdating ? "Saving..." : "Apply"}
+                          </button>
                         </div>
-                      </div>
-                    </td>
-
-                    {/* Price */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-medium text-gray-900">
-                        ${order.package_price?.toFixed(2)}
-                      </span>
-                    </td>
-
-                    {/* Status */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-3 py-1 inline-flex text-xs font-semibold rounded-full ${getStatusStyle(order.order_status)}`}
-                      >
-                        {order.order_status}
-                      </span>
-                    </td>
-
-                    {/* Date */}
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-700">
-                        {formatDate(order.createdAt)}
-                      </span>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
