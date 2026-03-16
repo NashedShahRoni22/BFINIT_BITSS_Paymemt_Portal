@@ -90,7 +90,7 @@ export default function BitssTableRow({ order }) {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -129,7 +129,7 @@ export default function BitssTableRow({ order }) {
       <td className="px-6 py-4">
         <span
           className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-            order.status
+            order.status,
           )}`}
         >
           {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
@@ -138,7 +138,7 @@ export default function BitssTableRow({ order }) {
       <td className="px-6 py-4">
         <span
           className={`px-3 py-1 rounded-full text-xs font-medium ${getPaymentStatusColor(
-            isPaid
+            isPaid,
           )}`}
         >
           {isPaid ? "✓ Paid" : "⏱ Unpaid"}

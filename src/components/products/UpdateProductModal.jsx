@@ -480,7 +480,7 @@ export default function UpdateProductModal({
 
   const removeSubscriptionPeriod = (index) => {
     const newSubscriptions = formData.subscription_periods.filter(
-      (_, i) => i !== index
+      (_, i) => i !== index,
     );
     setFormData({ ...formData, subscription_periods: newSubscriptions });
   };
@@ -494,7 +494,7 @@ export default function UpdateProductModal({
     }
 
     const filteredDetails = formData.product_details.filter(
-      (d) => d?.trim?.() !== ""
+      (d) => d?.trim?.() !== "",
     );
 
     const payload = {
@@ -520,7 +520,7 @@ export default function UpdateProductModal({
             Authorization: `Bearer ${user}`,
           },
           body: JSON.stringify(payload),
-        }
+        },
       );
 
       const data = await response.json();
@@ -737,7 +737,7 @@ export default function UpdateProductModal({
                           handleSubscriptionChange(
                             index,
                             "duration",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -754,13 +754,13 @@ export default function UpdateProductModal({
                           handleSubscriptionChange(
                             index,
                             "discount_type",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="percent">Percent (%)</option>
-                        <option value="flat">Flat ($)</option>
+                        <option value="flat">Flat</option>
                       </select>
                     </div>
                     <div>
@@ -775,7 +775,7 @@ export default function UpdateProductModal({
                           handleSubscriptionChange(
                             index,
                             "amount",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"

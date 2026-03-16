@@ -348,7 +348,7 @@ export default function AddProductModal({ onClose, onAdd, categories }) {
 
   const removeSubscriptionPeriod = (index) => {
     const newSubscriptions = formData.subscription_periods.filter(
-      (_, i) => i !== index
+      (_, i) => i !== index,
     );
     setFormData({ ...formData, subscription_periods: newSubscriptions });
   };
@@ -379,7 +379,7 @@ export default function AddProductModal({ onClose, onAdd, categories }) {
     }
 
     const filteredDetails = formData.product_details.filter(
-      (x) => x.trim() !== ""
+      (x) => x.trim() !== "",
     );
 
     const payload = {
@@ -473,7 +473,7 @@ export default function AddProductModal({ onClose, onAdd, categories }) {
                           ...formData,
                           combo_products: exists
                             ? formData.combo_products.filter(
-                                (id) => id !== p._id
+                                (id) => id !== p._id,
                               )
                             : [...formData.combo_products, p._id],
                         });
@@ -637,7 +637,7 @@ export default function AddProductModal({ onClose, onAdd, categories }) {
                           handleSubscriptionChange(
                             index,
                             "duration",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -654,13 +654,13 @@ export default function AddProductModal({ onClose, onAdd, categories }) {
                           handleSubscriptionChange(
                             index,
                             "discount_type",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="percent">Percent (%)</option>
-                        <option value="flat">Flat ($)</option>
+                        <option value="flat">Flat</option>
                       </select>
                     </div>
                     <div>
@@ -675,7 +675,7 @@ export default function AddProductModal({ onClose, onAdd, categories }) {
                           handleSubscriptionChange(
                             index,
                             "amount",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"

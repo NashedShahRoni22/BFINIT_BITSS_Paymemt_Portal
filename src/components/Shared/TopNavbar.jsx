@@ -5,7 +5,7 @@ import bfinitLogo from "../../assets/logo/bfinit-logo.png";
 export default function TopNavbar({ toggleSidebar }) {
   return (
     <nav className="flex justify-between p-5 lg:hidden">
-      <Link to="/dashboard">
+      <Link to="/dashboard/bitss/orders">
         <img src={bfinitLogo} alt="bfinit logo" className="w-20" />
       </Link>
       <button onClick={toggleSidebar}>

@@ -22,7 +22,7 @@ export default function Sidebar({ showSidebar, toggleSidebar }) {
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100">
-        <Link to="/dashboard" className="flex items-center gap-2">
+        <Link to="/dashboard/bitss/orders" className="flex items-center gap-2">
           <img src={bfinitLogo} alt="bfinit logo" className="w-1/2 mx-auto" />
         </Link>
 

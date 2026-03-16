@@ -1,14 +1,55 @@
-import { useState, useEffect } from "react";
-import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import { useState } from "react";
+import { FaPlus, FaEdit } from "react-icons/fa";
 import { MdCategory } from "react-icons/md";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import useAuth from "../../hooks/useAuth";
+import { useCategories } from "../../hooks/useCategories";
 
-const BASE_URL = import.meta.env.VITE_Base_Url;
+const BASE_URL = import.meta.env.VITE_NEW_BASE_URL;
+
+const createCategory = async ({ formData, token }) => {
+  const formDataToSend = new FormData();
+  formDataToSend.append("name", formData.name);
+  formDataToSend.append("sort_description", formData.sort_description);
+  formDataToSend.append("status", "active");
+  if (formData.image) formDataToSend.append("image", formData.image);
+
+  const response = await fetch(`${BASE_URL}/all-categories`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formDataToSend,
+  });
+  const data = await response.json();
+  if (!data.status && !data.success)
+    throw new Error(data.message || "Failed to create category");
+  return data;
+};
+
+const updateCategory = async ({ id, formData, token }) => {
+  const formDataToSend = new FormData();
+  formDataToSend.append("name", formData.name);
+  formDataToSend.append("sort_description", formData.sort_description);
+  formDataToSend.append("status", formData.status);
+  if (formData.image) formDataToSend.append("image", formData.image);
+
+  const response = await fetch(
+    `${BASE_URL}/products/product/category/update/${id}`,
+    {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formDataToSend,
+    },
+  );
+  const data = await response.json();
+  if (!data.status && !data.success)
+    throw new Error(data.message || "Failed to update category");
+  return data;
+};
 
 export default function Categories() {
   const { user } = useAuth();
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
+
   const [showModal, setShowModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -24,109 +65,52 @@ export default function Categories() {
     image: null,
   });
 
-  // Fetch categories
-  const fetchCategories = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(
-        `${BASE_URL}/products/product/category/index`
-      );
-      const data = await response.json();
-      if (data.success) {
-        setCategories(data.data || []);
-      }
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-      alert("Failed to fetch categories");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // ─── GET categories ───────────────────────────────────────────────────────
+  const { data: categories = [], isLoading: loading } = useCategories();
 
-  // Handle category creation
-  const handleCreateCategory = async (e) => {
+  // ─── CREATE mutation ──────────────────────────────────────────────────────
+  const createMutation = useMutation({
+    mutationFn: (fd) => createCategory({ formData: fd, token: user }),
+    onSuccess: () => {
+      alert("Category created successfully!");
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      setShowModal(false);
+      setFormData({ name: "", sort_description: "", image: null });
+    },
+    onError: (err) => alert(err.message || "Failed to create category"),
+  });
+
+  // ─── UPDATE mutation ──────────────────────────────────────────────────────
+  const updateMutation = useMutation({
+    mutationFn: (fd) =>
+      updateCategory({ id: selectedCategory.id, formData: fd, token: user }),
+    onSuccess: () => {
+      alert("Category updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      setShowUpdateModal(false);
+      setSelectedCategory(null);
+      setUpdateFormData({
+        name: "",
+        sort_description: "",
+        status: "active",
+        image: null,
+      });
+    },
+    onError: (err) => alert(err.message || "Failed to update category"),
+  });
+
+  // ─── Handlers ─────────────────────────────────────────────────────────────
+  const handleCreateCategory = (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    const formDataToSend = new FormData();
-    formDataToSend.append("name", formData.name);
-    formDataToSend.append("sort_description", formData.sort_description);
-    formDataToSend.append("status", "active");
-    if (formData.image) formDataToSend.append("image", formData.image);
-
-    try {
-      const response = await fetch(
-        `${BASE_URL}/products/product/category/create`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${user}`,
-          },
-          body: formDataToSend,
-        }
-      );
-
-      const data = await response.json();
-      if (data.status === "success" || data.success) {
-        alert("Category created successfully!");
-        setShowModal(false);
-        setFormData({ name: "", sort_description: "", image: null });
-        fetchCategories();
-      } else {
-        alert(data.message || "Failed to create category");
-      }
-    } catch (error) {
-      console.error("Error creating category:", error);
-      alert("Failed to create category");
-    } finally {
-      setLoading(false);
-    }
+    createMutation.mutate(formData);
   };
 
-  // Handle category update
-  const handleUpdateCategory = async (e) => {
+  const handleUpdateCategory = (e) => {
     e.preventDefault();
     if (!selectedCategory) return;
-
-    setLoading(true);
-
-    const formDataToSend = new FormData();
-    formDataToSend.append("name", updateFormData.name);
-    formDataToSend.append("sort_description", updateFormData.sort_description);
-    formDataToSend.append("status", updateFormData.status);
-    if (updateFormData.image) formDataToSend.append("image", updateFormData.image);
-
-    try {
-      const response = await fetch(
-        `${BASE_URL}/products/product/category/update/${selectedCategory._id}`,
-        {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${user}`,
-          },
-          body: formDataToSend,
-        }
-      );
-
-      const data = await response.json();
-      if (data.status === "success" || data.success) {
-        alert("Category updated successfully!");
-        setShowUpdateModal(false);
-        setSelectedCategory(null);
-        setUpdateFormData({ name: "", sort_description: "", status: "active", image: null });
-        fetchCategories();
-      } else {
-        alert(data.message || "Failed to update category");
-      }
-    } catch (error) {
-      console.error("Error updating category:", error);
-      alert("Failed to update category");
-    } finally {
-      setLoading(false);
-    }
+    updateMutation.mutate(updateFormData);
   };
 
-  // Open update modal with category data
   const openUpdateModal = (category) => {
     setSelectedCategory(category);
     setUpdateFormData({
@@ -138,7 +122,6 @@ export default function Categories() {
     setShowUpdateModal(true);
   };
 
-  // File change handlers
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) setFormData({ ...formData, image: file });
@@ -149,10 +132,7 @@ export default function Categories() {
     if (file) setUpdateFormData({ ...updateFormData, image: file });
   };
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
+  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div>
       {/* Header */}
@@ -178,19 +158,19 @@ export default function Categories() {
         <div className="grid md:grid-cols-3 lg:grid-cols-4 sm:grid-cols-2 gap-6">
           {categories.map((cat) => (
             <div
-              key={cat._id}
+              key={cat.id}
               className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition p-4 flex flex-col"
             >
-              {/* Image */}
-              {cat.image ? (
+              {/* Icon / placeholder — API has icon field (null for now) */}
+              {cat.icon ? (
                 <img
-                  src={cat.image}
+                  src={cat.icon}
                   alt={cat.name}
                   className="h-40 w-full object-cover rounded-lg mb-4"
                 />
               ) : (
-                <div className="h-40 bg-gray-100 flex items-center justify-center rounded-lg text-gray-400">
-                  No Image
+                <div className="h-40 bg-gray-100 flex items-center justify-center rounded-lg text-gray-400 mb-4">
+                  <MdCategory className="text-4xl text-gray-300" />
                 </div>
               )}
 
@@ -206,28 +186,20 @@ export default function Categories() {
 
               {/* Actions */}
               <div className="flex justify-between items-center mt-4 border-t pt-3 text-sm text-gray-500">
-                <span className="capitalize">
-                  Status:{" "}
+                <span>
                   <span
-                    className={`${
-                      cat.status === "active"
-                        ? "text-green-600 font-medium"
-                        : "text-red-500"
-                    }`}
+                    className={`font-medium ${cat.is_default ? "text-blue-600" : "text-gray-400"}`}
                   >
-                    {cat.status}
+                    {cat.is_default ? "Default" : "Custom"}
                   </span>
                 </span>
                 <div className="flex gap-3">
-                  <button 
+                  <button
                     onClick={() => openUpdateModal(cat)}
                     className="text-blue-600 hover:text-blue-800 transition-colors cursor-pointer"
                   >
                     <FaEdit />
                   </button>
-                  {/* <button className="text-red-600 hover:text-red-800 transition-colors">
-                    <FaTrash />
-                  </button> */}
                 </div>
               </div>
             </div>
@@ -250,186 +222,197 @@ export default function Categories() {
 
       {/* Add Category Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              Add New Category
-            </h2>
-            <form onSubmit={handleCreateCategory}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Category Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="Enter category name"
-                />
-              </div>
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                Add New Category
+              </h2>
+              <form onSubmit={handleCreateCategory}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Category Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    placeholder="Enter category name"
+                  />
+                </div>
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description
-                </label>
-                <textarea
-                  value={formData.sort_description}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      sort_description: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="Enter category description"
-                  rows="3"
-                />
-              </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={formData.sort_description}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        sort_description: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    placeholder="Enter category description"
+                    rows="3"
+                  />
+                </div>
 
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Category Image
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="w-full text-sm text-gray-700 file:mr-3 file:py-2 file:px-3 file:border file:border-gray-300 file:rounded-lg file:bg-gray-50 file:text-gray-600 hover:file:bg-gray-100 cursor-pointer"
-                />
-              </div>
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Category Image
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="w-full text-sm text-gray-700 file:mr-3 file:py-2 file:px-3 file:border file:border-gray-300 file:rounded-lg file:bg-gray-50 file:text-gray-600 hover:file:bg-gray-100 cursor-pointer"
+                  />
+                </div>
 
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium disabled:opacity-50"
-                >
-                  {loading ? "Creating..." : "Create"}
-                </button>
-              </div>
-            </form>
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={createMutation.isPending}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium disabled:opacity-50"
+                  >
+                    {createMutation.isPending ? "Creating..." : "Create"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}
 
       {/* Update Category Modal */}
       {showUpdateModal && selectedCategory && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md mx-4">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">
-              Update Category
-            </h2>
-            <form onSubmit={handleUpdateCategory}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Category Name *
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={updateFormData.name}
-                  onChange={(e) =>
-                    setUpdateFormData({ ...updateFormData, name: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="Enter category name"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description
-                </label>
-                <textarea
-                  value={updateFormData.sort_description}
-                  onChange={(e) =>
-                    setUpdateFormData({
-                      ...updateFormData,
-                      sort_description: e.target.value,
-                    })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="Enter category description"
-                  rows="3"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Status *
-                </label>
-                <select
-                  value={updateFormData.status}
-                  onChange={(e) =>
-                    setUpdateFormData({ ...updateFormData, status: e.target.value })
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Current Image
-                </label>
-                {selectedCategory.image ? (
-                  <img
-                    src={selectedCategory.image}
-                    alt={selectedCategory.name}
-                    className="h-32 w-full object-cover rounded-lg mb-2"
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h2 className="text-xl font-bold text-gray-800 mb-4">
+                Update Category
+              </h2>
+              <form onSubmit={handleUpdateCategory}>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Category Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={updateFormData.name}
+                    onChange={(e) =>
+                      setUpdateFormData({
+                        ...updateFormData,
+                        name: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    placeholder="Enter category name"
                   />
-                ) : (
-                  <div className="h-32 bg-gray-100 flex items-center justify-center rounded-lg text-gray-400 mb-2">
-                    No Image
-                  </div>
-                )}
-              </div>
+                </div>
 
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Update Image (Optional)
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleUpdateFileChange}
-                  className="w-full text-sm text-gray-700 file:mr-3 file:py-2 file:px-3 file:border file:border-gray-300 file:rounded-lg file:bg-gray-50 file:text-gray-600 hover:file:bg-gray-100 cursor-pointer"
-                />
-              </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={updateFormData.sort_description}
+                    onChange={(e) =>
+                      setUpdateFormData({
+                        ...updateFormData,
+                        sort_description: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    placeholder="Enter category description"
+                    rows="3"
+                  />
+                </div>
 
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowUpdateModal(false);
-                    setSelectedCategory(null);
-                  }}
-                  className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium disabled:opacity-50"
-                >
-                  {loading ? "Updating..." : "Update"}
-                </button>
-              </div>
-            </form>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Status *
+                  </label>
+                  <select
+                    value={updateFormData.status}
+                    onChange={(e) =>
+                      setUpdateFormData({
+                        ...updateFormData,
+                        status: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
+
+                {/* Current icon preview */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Current Image
+                  </label>
+                  {selectedCategory.icon ? (
+                    <img
+                      src={selectedCategory.icon}
+                      alt={selectedCategory.name}
+                      className="h-32 w-full object-cover rounded-lg mb-2"
+                    />
+                  ) : (
+                    <div className="h-32 bg-gray-100 flex items-center justify-center rounded-lg text-gray-400 mb-2">
+                      No Image
+                    </div>
+                  )}
+                </div>
+
+                <div className="mb-6">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Update Image (Optional)
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleUpdateFileChange}
+                    className="w-full text-sm text-gray-700 file:mr-3 file:py-2 file:px-3 file:border file:border-gray-300 file:rounded-lg file:bg-gray-50 file:text-gray-600 hover:file:bg-gray-100 cursor-pointer"
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowUpdateModal(false);
+                      setSelectedCategory(null);
+                    }}
+                    className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={updateMutation.isPending}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium disabled:opacity-50"
+                  >
+                    {updateMutation.isPending ? "Updating..." : "Update"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

@@ -10,6 +10,8 @@ import OrderDetails from "../pages/Bitss/OrderDetails/OrderDetails";
 import NotFound from "../pages/NotFound/NotFound";
 import RenewOrders from "../pages/Bitss/Renew/RenewOrders";
 import RenewDetails from "../pages/Bitss/RenewDetails/RenewDetails";
+import AddProductPage from "../pages/Bitss/AddProductPage";
+import EditProductPage from "../pages/Bitss/EditProductPage";
 
 export const router = createBrowserRouter([
   {
@@ -39,6 +41,14 @@ export const router = createBrowserRouter([
       {
         path: "/dashboard/bitss/products",
         element: <BitssProducts />,
+      },
+      {
+        path: "/dashboard/bitss/products/add",
+        element: <AddProductPage />,
+      },
+      {
+        path: "/dashboard/bitss/products/edit/:id",
+        element: <EditProductPage />,
       },
       {
         path: "/dashboard/bitss/orders/:orderId",

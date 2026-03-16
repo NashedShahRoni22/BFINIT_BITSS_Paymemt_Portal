@@ -6,56 +6,31 @@ import bfinitLogo from "../../assets/logo/bfinit-logo.png";
 import shapes1 from "../../assets/shapes/shapes-1.png";
 import rectangle from "../../assets/shapes/rectangle.png";
 import useAuth from "../../hooks/useAuth";
+import { useLogin } from "../../hooks/useLogin";
 
 export default function Login() {
   const { setUser } = useAuth();
-
-  const url = "https://paymentapi.bfinit.com/api/v1/auth/user/login";
   const navigate = useNavigate();
   const [showPass, setShowPass] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-  // Submit Login Form
+  const { mutate: login, isPending, isError, error } = useLogin();
+
   const handleSubmit = (e) => {
-    setLoading(true);
     e.preventDefault();
     const form = e.target;
     const email = form.email.value;
     const password = form.password.value;
 
-    if (email && password) {
-      fetch(url, {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
+    login(
+      { email, password },
+      {
+        onSuccess: (data) => {
+          localStorage.setItem("bfinitBlogAccessToken", data.data.access_token);
+          setUser(data.data.access_token);
+          navigate("/dashboard/bitss/orders");
         },
-        body: JSON.stringify({ email, password }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.success) {
-            // Save to localStorage
-            localStorage.setItem(
-              "bfinitBlogAccessToken",
-              data.data.access_token
-            );
-
-            // Update auth state - ADD THIS LINE
-            setUser(data.data.access_token);
-
-            navigate("/dashboard/bitss/orders");
-            setLoading(false);
-          } else {
-            setLoading(false);
-            alert(data.message);
-          }
-        })
-        .catch((error) => {
-          console.error("Login error:", error);
-          setLoading(false);
-          alert("An error occurred during login");
-        });
-    }
+      },
+    );
   };
 
   return (
@@ -73,6 +48,13 @@ export default function Login() {
           <p className="mb-10 mt-1.5 text-center text-lg font-medium text-neutral-700 md:text-left">
             Please Log in to your account.
           </p>
+
+          {/* Error Message */}
+          {isError && (
+            <p className="mb-4 text-sm text-red-500 bg-red-50 px-3 py-2 rounded-lg">
+              {error?.message || "Login failed. Please try again."}
+            </p>
+          )}
 
           <label htmlFor="email" className="capitalize text-neutral-700">
             email address
@@ -116,13 +98,13 @@ export default function Login() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={isPending}
             className={`w-full flex cursor-pointer items-center transition-all duration-200 ease-linear justify-center gap-2 rounded-lg px-4 py-2 text-xl font-semibold text-white ${
-              loading ? "bg-primary/70" : "bg-primary hover:bg-primary-hover"
+              isPending ? "bg-primary/70" : "bg-primary hover:bg-primary-hover"
             }`}
           >
             Log in{" "}
-            {loading && (
+            {isPending && (
               <LiaSpinnerSolid className="animate-spin text-2xl text-white" />
             )}
           </button>
