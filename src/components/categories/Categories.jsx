@@ -14,7 +14,7 @@ const createCategory = async ({ formData, token }) => {
   formDataToSend.append("status", "active");
   if (formData.image) formDataToSend.append("image", formData.image);
 
-  const response = await fetch(`${BASE_URL}/all-categories`, {
+  const response = await fetch(`${BASE_URL}/categories`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
     body: formDataToSend,
@@ -32,14 +32,11 @@ const updateCategory = async ({ id, formData, token }) => {
   formDataToSend.append("status", formData.status);
   if (formData.image) formDataToSend.append("image", formData.image);
 
-  const response = await fetch(
-    `${BASE_URL}/products/product/category/update/${id}`,
-    {
-      method: "PUT",
-      headers: { Authorization: `Bearer ${token}` },
-      body: formDataToSend,
-    },
-  );
+  const response = await fetch(`${BASE_URL}/categories/${id}`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formDataToSend,
+  });
   const data = await response.json();
   if (!data.status && !data.success)
     throw new Error(data.message || "Failed to update category");
