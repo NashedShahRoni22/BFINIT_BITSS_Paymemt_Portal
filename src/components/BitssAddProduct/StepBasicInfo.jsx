@@ -371,14 +371,43 @@ export default function StepBasicInfo({ form, update, errors }) {
                   setContents={form.sort_description}
                   onChange={(content) => update("sort_description", content)}
                   setOptions={{
-                    height: 180,
                     buttonList: [
-                      ["bold", "italic", "underline", "strike"],
-                      ["fontColor", "hiliteColor"],
-                      ["align", "list"],
-                      ["link"],
-                      ["undo", "redo"],
+                      [
+                        "undo",
+                        "redo",
+                        "formatBlock",
+                        "bold",
+                        "italic",
+                        "underline",
+                        "strike",
+                      ],
+                      ["fontSize", "fontColor", "hiliteColor", "removeFormat"],
+                      ["align", "list", "outdent", "indent", "lineHeight"],
+                      [
+                        "blockquote",
+                        "horizontalRule",
+                        "table",
+                        "link",
+                        "image",
+                        "video",
+                      ],
+                      ["fullScreen", "showBlocks", "preview"],
                     ],
+                    charCounter: true,
+                    charCounterLabel: "Characters:",
+
+                    formats: [
+                      "p",
+                      "div",
+                      "h1",
+                      "h2",
+                      "h3",
+                      "h4",
+                      "h5",
+                      "h6",
+                      "blockquote",
+                    ],
+                    fontSize: [8, 10, 12, 14, 16, 18, 20, 24, 28, 32, 36],
                   }}
                 />
               </div>
