@@ -20,71 +20,130 @@ import { useCountries } from "../../hooks/useCountries";
 const BASE_URL = import.meta.env.VITE_NEW_BASE_URL;
 
 // ─── Map API response → form shape ───────────────────────────────────────────
+//
+// Handles all 4 API shapes:
+//   1. Single subscription product  (is_combo:false, is_usb:false, is_variant:false)
+//   2. Combo pack                   (is_combo:true)
+//   3. USB without variants         (is_usb:true,  is_variant:false)
+//   4. USB with size variants       (is_usb:true,  is_variant:true)
+//
 function mapProductToForm(product) {
+  const prices = product.prices ?? [];
+  const isUsb = Boolean(product.is_usb);
+
+  // ── product_prices ──────────────────────────────────────────────────────
+  // API key is `original_price`, not `price`.
+  // discount_type: null  →  "" (form convention for "no discount").
+  // discount_amount: 0 with no type  →  "" so the discount field stays empty.
+  const product_prices = prices.map((p) => ({
+    country_id: p.country_id != null ? String(p.country_id) : "",
+    variant_id: p.variant_id != null ? String(p.variant_id) : "",
+    price: p.original_price != null ? String(p.original_price) : "",
+    discount_type: p.discount_type ?? "",
+    discount_amount:
+      p.discount_type && p.discount_amount ? String(p.discount_amount) : "",
+    discount_expire_at: p.discount_expire_at ?? "",
+    unit: p.unit != null ? String(p.unit) : "",
+  }));
+
+  // ── subscription_periods (non-USB only) ─────────────────────────────────
+  // The API nests subscription data inside each price entry under
+  // `subscription_pricing[]`, not at the product level.
+  // All price entries share the same subscription list; use the first one
+  // that has data.
+  let subscription_periods = INITIAL_FORM.subscription_periods;
+  if (!isUsb) {
+    const sourcePriceEntry = prices.find(
+      (p) => p.subscription_pricing?.length > 0,
+    );
+    if (sourcePriceEntry) {
+      subscription_periods = sourcePriceEntry.subscription_pricing.map(
+        (sub) => ({
+          subscription_id: sub.subscription_id, // keep for PUT reference
+          duration: String(sub.duration_months ?? ""),
+          discount_type: sub.discount_type ?? "",
+          // Only surface an amount when there's an actual discount type
+          amount:
+            sub.discount_type && sub.discount_amount
+              ? String(sub.discount_amount)
+              : "",
+          status: true, // API doesn't return status per-period; default active
+        }),
+      );
+    }
+  }
+
+  // ── selected_products (combo) ────────────────────────────────────────────
+  // combo_products[] objects have an `id` field (the child product's ID).
+  const selected_products = Boolean(product.is_combo)
+    ? (product.combo_products ?? []).map((p) => p.id)
+    : [];
+
+  // ── variants for USB+variant products ───────────────────────────────────
+  // The API always returns `variants: []` (empty). Variant information is
+  // embedded in each price entry as `variant_id` + `variant_name`.
+  // We derive:
+  //   form.variants         — numeric IDs for VariantPicker checkboxes
+  //   form.product_variants — {variant_name} objects for StepReview display
+  const seen = new Set();
+  const product_variants = [];
+  const variants = [];
+  for (const p of prices) {
+    if (p.variant_id != null && !seen.has(p.variant_id)) {
+      seen.add(p.variant_id);
+      variants.push(Number(p.variant_id));
+      product_variants.push({
+        variant_id: String(p.variant_id),
+        variant_name: p.variant_name ?? "",
+      });
+    }
+  }
+
+  // ── details[] ───────────────────────────────────────────────────────────
+  // API returns plain strings. Guard against the legacy object shape
+  // {desc_name} just in case the API ever changes back.
+  const product_details =
+    (product.details ?? []).length > 0
+      ? product.details
+          .map((d) =>
+            typeof d === "object" ? (d.desc_name ?? "") : String(d ?? ""),
+          )
+          .filter((d) => d !== "")
+      : [""];
+
+  // ── status ───────────────────────────────────────────────────────────────
+  // The product-detail endpoint does NOT return a top-level `status` field.
+  // Map integer status if present (comes from combo_products children),
+  // otherwise fall back to "available".
+  const statusRaw = product.status;
+  const status =
+    statusRaw === 1 || statusRaw === "1"
+      ? "available"
+      : statusRaw === 0 || statusRaw === "0"
+        ? "unavailable"
+        : typeof statusRaw === "string" && statusRaw.length > 0
+          ? statusRaw
+          : "available";
+
   return {
     ...INITIAL_FORM,
     name: product.name ?? "",
-    // status comes as integer 1/0 — map to string for the select
-    status:
-      product.status === 1
-        ? "available"
-        : product.status === 0
-          ? "unavailable"
-          : (product.status ?? "available"),
+    status,
     category_id: product.category_id ? String(product.category_id) : "",
-    // API returns integers 0/1 — coerce to boolean
+    // API uses `description`; form uses `sort_description`
+    sort_description: product.description ?? product.sort_description ?? "",
     is_combo: Boolean(product.is_combo),
-    is_usb: Boolean(product.is_usb),
+    is_usb: isUsb,
+    // API uses `is_variant`; form uses `is_product_variant`
     is_product_variant: Boolean(
       product.is_variant ?? product.is_product_variant,
     ),
-    // API field is sort_description directly
-    sort_description: product.sort_description ?? product.description ?? "",
-
-    // details[] — objects with desc_name
-    product_details:
-      (product.details ?? []).length > 0
-        ? product.details
-            .map((d) =>
-              typeof d === "object" ? (d.desc_name ?? "") : String(d ?? ""),
-            )
-            .filter((d) => d !== "")
-        : [""],
-
-    // prices[] → product_prices
-    product_prices: (product.prices ?? []).map((p) => ({
-      country_id: p.country_id ? String(p.country_id) : "",
-      variant_id: p.variant_id ? String(p.variant_id) : "",
-      price: p.price != null ? String(p.price) : "",
-      discount_type: p.discount_type ?? "",
-      discount_amount:
-        p.discount_amount != null ? String(p.discount_amount) : "",
-      discount_expire_at: p.discount_expire_at ?? "",
-      unit: p.unit != null ? String(p.unit) : "",
-    })),
-
-    // API returns "subscriptions" (not "subscription_period")
-    subscription_periods:
-      (product.subscriptions ?? product.subscription_period ?? []).length > 0
-        ? (product.subscriptions ?? product.subscription_period ?? []).map(
-            (s) => ({
-              duration: String(s.duration ?? ""),
-              discount_type: s.discount_type ?? "",
-              amount: s.amount != null ? String(s.amount) : "",
-              status: s.status === 1 || s.status === true,
-            }),
-          )
-        : INITIAL_FORM.subscription_periods,
-
-    // combo_products[]
-    selected_products: (product.combo_products ?? []).map(
-      (p) => p.product_id ?? p.id,
-    ),
-
-    // variants[] — objects or IDs
-    variants: (product.variants ?? [])
-      .map((v) => (typeof v === "object" ? (v.id ?? v.variant_id) : v))
-      .filter(Boolean),
+    product_details,
+    product_prices,
+    subscription_periods,
+    selected_products,
+    variants,
+    product_variants,
   };
 }
 
@@ -250,7 +309,6 @@ export default function EditProductPage() {
   });
 
   // Pre-populate form when product data arrives
-  // useEffect instead of onSuccess — onSuccess was removed in TanStack Query v5
   useEffect(() => {
     if (productData) setForm(mapProductToForm(productData));
   }, [productData]);

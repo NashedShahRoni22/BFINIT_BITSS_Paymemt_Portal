@@ -6,13 +6,17 @@ const fetchCountries = async () => {
   const response = await fetch(`${BASE_URL}/countries`);
   if (!response.ok) throw new Error("Failed to fetch countries");
   const data = await response.json();
-  if (!data.status) throw new Error("Invalid response");
-  return data.data;
+  if (!data.success) throw new Error("Invalid response");
+
+  return (data.data || []).map((c) => ({
+    ...c,
+    currency_icon: c["currency_icon "] ?? c.currency_icon ?? "",
+  }));
 };
 
 export const useCountries = () => {
   return useQuery({
     queryKey: ["countries"],
-    queryFn: () => fetchCountries(),
+    queryFn: fetchCountries,
   });
 };

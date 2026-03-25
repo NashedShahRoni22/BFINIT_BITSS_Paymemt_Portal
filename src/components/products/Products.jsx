@@ -16,7 +16,10 @@ const fetchProducts = async (countryId, token) => {
   if (!res.ok) throw new Error("Failed to fetch products");
   const data = await res.json();
   if (!data.success) throw new Error(data.message || "Invalid response");
-  return data.data || [];
+  return (data.data || []).map((c) => ({
+    ...c,
+    currency_icon: c["currency_icon "] ?? c.currency_icon ?? "",
+  }));
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
