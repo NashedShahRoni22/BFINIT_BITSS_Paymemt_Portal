@@ -12,6 +12,8 @@ import RenewOrders from "../pages/Bitss/Renew/RenewOrders";
 import RenewDetails from "../pages/Bitss/RenewDetails/RenewDetails";
 import AddProductPage from "../pages/Bitss/AddProductPage";
 import EditProductPage from "../pages/Bitss/EditProductPage";
+import NewOrders from "../pages/Bitss/NewOrders/NewOrders";
+import NewOrderDetails from "../pages/Bitss/NewOrderDetails/NewOrderDetails";
 
 export const router = createBrowserRouter([
   {
@@ -36,8 +38,13 @@ export const router = createBrowserRouter([
       },
       {
         path: "/dashboard/bitss/orders",
-        element: <BitssOrders />,
+        element: <NewOrders />,
       },
+      // archived old orders list page
+      // {
+      //   path: "/dashboard/bitss/orders/old",
+      //   element: <BitssOrders />,
+      // },
       {
         path: "/dashboard/bitss/products",
         element: <BitssProducts />,
@@ -52,8 +59,13 @@ export const router = createBrowserRouter([
       },
       {
         path: "/dashboard/bitss/orders/:orderId",
-        element: <OrderDetails />,
+        element: <NewOrderDetails />,
       },
+      // archived old order details page
+      // {
+      //   path: "/dashboard/bitss/orders/:orderId",
+      //   element: <OrderDetails />,
+      // },
       {
         path: "/dashboard/bitss/renew",
         element: <RenewOrders />,
