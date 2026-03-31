@@ -3,7 +3,6 @@ import { Link, NavLink } from "react-router";
 import { AiOutlineClose } from "react-icons/ai";
 import { LiaSpinnerSolid } from "react-icons/lia";
 import { sidebarLinksData } from "../../data/sidebarLinksData";
-import bfinitLogo from "../../assets/logo/bfinit-logo.png";
 import useAuth from "../../hooks/useAuth";
 
 export default function Sidebar({ showSidebar, toggleSidebar }) {
@@ -22,8 +21,11 @@ export default function Sidebar({ showSidebar, toggleSidebar }) {
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-neutral-100">
-        <Link to="/dashboard/bitss/orders" className="flex items-center gap-2">
-          <img src={bfinitLogo} alt="bfinit logo" className="w-1/2 mx-auto" />
+        <Link
+          to="/dashboard/bitss/orders"
+          className="flex items-center w-full justify-center gap-2"
+        >
+          <img src="/logo.png" alt="bfinit logo" className="size-16 mx-auto" />
         </Link>
 
         <AiOutlineClose

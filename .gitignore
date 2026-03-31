@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local notes (DO NOT PUSH TO GITHUB)
+README_LOCAL.md
