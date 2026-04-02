@@ -3,6 +3,7 @@ import { Badge } from "../Ui";
 import { buildPayload } from "../../hooks/useProductForm";
 import { useCountries } from "../../hooks/useCountries";
 import { useCategories } from "../../hooks/useCategories";
+import { useDeliveryCharges } from "../../hooks/useDeliveryCharges";
 
 // ─── Section wrapper ──────────────────────────────────────────────────────────
 function ReviewSection({ title, onEdit, children }) {
@@ -84,12 +85,27 @@ function ProductTypeBadge({ form }) {
 }
 
 // ─── Product Prices table ─────────────────────────────────────────────────────
-function ProductPricesTable({ prices, countries, isUsb, onEdit }) {
+function ProductPricesTable({
+  prices,
+  countries,
+  isUsb,
+  showDeliveryCharge,
+  deliveryCharges,
+  onEdit,
+}) {
   const filledPrices = prices.filter((p) => p.price);
 
   // Resolve country object from id
   const getCountry = (country_id) =>
     countries?.find((c) => String(c.id) === String(country_id));
+
+  // Resolve delivery charge label
+  const getDeliveryCharge = (delivery_charge_id) => {
+    if (!delivery_charge_id) return null;
+    return deliveryCharges?.find(
+      (d) => String(d.id) === String(delivery_charge_id),
+    );
+  };
 
   // Render currency icon HTML safely
   const CurrencyIcon = ({ html }) => (
@@ -113,9 +129,18 @@ function ProductPricesTable({ prices, countries, isUsb, onEdit }) {
   // Determine table columns
   const headers = ["Country & Currency", "Price", "Discount", "Expires"];
   if (isUsb) headers.splice(3, 0, "Unit"); // insert Unit before Expires for USB
+  if (showDeliveryCharge) headers.push("Delivery Charge");
 
   return (
     <ReviewSection title="Country Prices" onEdit={onEdit}>
+      {/* Delivery charge badge */}
+      {showDeliveryCharge && (
+        <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+          <span className="text-xs font-semibold text-blue-700">
+            🚚 Delivery charge enabled for this product
+          </span>
+        </div>
+      )}
       {filledPrices.length === 0 ? (
         <p className="text-sm text-gray-400 italic">No prices added.</p>
       ) : (
@@ -136,6 +161,9 @@ function ProductPricesTable({ prices, countries, isUsb, onEdit }) {
             <tbody>
               {filledPrices.map((p, i) => {
                 const country = getCountry(p.country_id);
+                const dc = showDeliveryCharge
+                  ? getDeliveryCharge(p.delivery_charge_id)
+                  : null;
                 return (
                   <tr
                     key={i}
@@ -185,13 +213,26 @@ function ProductPricesTable({ prices, countries, isUsb, onEdit }) {
                     )}
 
                     {/* Expires */}
-                    <td className="py-2.5 text-gray-500 text-xs whitespace-nowrap">
+                    <td className="py-2.5 pr-4 text-gray-500 text-xs whitespace-nowrap">
                       {p.discount_expire_at ? (
                         p.discount_expire_at.slice(0, 10)
                       ) : (
                         <span className="text-gray-400">—</span>
                       )}
                     </td>
+
+                    {/* Delivery charge — only when enabled */}
+                    {showDeliveryCharge && (
+                      <td className="py-2.5 text-gray-600 text-xs whitespace-nowrap">
+                        {dc ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-semibold border border-blue-200">
+                            <CurrencyIcon html={dc.currency} /> {dc.amount}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 italic">None</span>
+                        )}
+                      </td>
+                    )}
                   </tr>
                 );
               })}
@@ -208,6 +249,7 @@ export default function StepReview({ form, onGoToStep }) {
   const payload = buildPayload(form);
   const { data: countries } = useCountries();
   const { data: categories } = useCategories();
+  const { data: deliveryCharges = [] } = useDeliveryCharges();
 
   // Resolve category name dynamically from the same API used in StepBasicInfo
   const categoryName =
@@ -234,6 +276,20 @@ export default function StepReview({ form, onGoToStep }) {
         <KVRow
           label="Short Description"
           value={form.sort_description || null}
+        />
+        <KVRow
+          label="Domain Required"
+          value={
+            form.is_domain ? (
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">
+                ✓ Yes
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">
+                No
+              </span>
+            )
+          }
         />
       </ReviewSection>
 
@@ -293,6 +349,8 @@ export default function StepReview({ form, onGoToStep }) {
         prices={form.product_prices}
         countries={countries}
         isUsb={form.is_usb}
+        showDeliveryCharge={form.is_delivery_charge}
+        deliveryCharges={deliveryCharges}
         onEdit={() => onGoToStep(4)}
       />
 

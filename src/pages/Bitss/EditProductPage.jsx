@@ -44,6 +44,8 @@ function mapProductToForm(product) {
       p.discount_type && p.discount_amount ? String(p.discount_amount) : "",
     discount_expire_at: p.discount_expire_at ?? "",
     unit: p.unit != null ? String(p.unit) : "",
+    delivery_charge_id:
+      p.delivery_charge_id != null ? String(p.delivery_charge_id) : null,
   }));
 
   // ── subscription_periods (non-USB only) ─────────────────────────────────
@@ -138,6 +140,8 @@ function mapProductToForm(product) {
     is_product_variant: Boolean(
       product.is_variant ?? product.is_product_variant,
     ),
+    is_domain: Boolean(product.is_domain),
+    is_delivery_charge: Boolean(product.is_delivery_charge),
     product_details,
     product_prices,
     subscription_periods,

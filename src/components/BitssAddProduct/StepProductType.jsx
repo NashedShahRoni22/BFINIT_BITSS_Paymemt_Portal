@@ -145,16 +145,41 @@ export default function StepProductType({ form, update }) {
         </div>
       )}
 
-      {/* Summary line */}
-      <div className="flex items-center gap-2 pt-2">
-        <div className="w-2 h-2 rounded-full bg-indigo-500" />
-        <p className="text-xs text-gray-500">
-          Selected:{" "}
-          <span className="font-semibold text-gray-700">
-            {TYPE_OPTIONS.find((t) => t.id === currentType)?.label}
-            {form.is_usb && form.is_product_variant ? " (with variants)" : ""}
-          </span>
+      {/* Domain required toggle — applies to all product types */}
+      <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-5 space-y-1">
+        <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-3">
+          🌐 Domain Configuration
         </p>
+        <Toggle
+          checked={form.is_domain}
+          onChange={(val) => update("is_domain", val)}
+          label="Domain is required for this product"
+          description="Enable if the customer must provide a domain name during checkout (e.g. SSL certificates, hosted software licenses)."
+        />
+      </div>
+
+      {/* Summary line */}
+      <div className="flex items-center gap-4 pt-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-indigo-500" />
+          <p className="text-xs text-gray-500">
+            Selected:{" "}
+            <span className="font-semibold text-gray-700">
+              {TYPE_OPTIONS.find((t) => t.id === currentType)?.label}
+              {form.is_usb && form.is_product_variant ? " (with variants)" : ""}
+            </span>
+          </p>
+        </div>
+        {form.is_domain && (
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-indigo-400" />
+            <p className="text-xs text-gray-500">
+              <span className="font-semibold text-gray-700">
+                Domain required
+              </span>
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

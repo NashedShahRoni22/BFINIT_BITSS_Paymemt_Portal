@@ -17,7 +17,7 @@ const baseUrl = import.meta.env.VITE_NEW_BASE_URL;
 
 export default function StatusUpdatePanel({ order, token, onSuccess }) {
   const queryClient = useQueryClient();
-  const payment = order.payments?.[0];
+  const payment = order?.payment;
   const paymentMethod = payment?.payment_method ?? "";
   const isManualPayment = MANUAL_PAYMENT_METHODS.includes(paymentMethod);
 
@@ -25,7 +25,9 @@ export default function StatusUpdatePanel({ order, token, onSuccess }) {
   const [paymentStatus, setPaymentStatus] = useState(
     payment?.status ?? "pending",
   );
-  const [toast, setToast] = useState(null); // { type: "success"|"error", msg }
+  const [toast, setToast] = useState(null);
+
+  const isStripePayment = paymentMethod === "stripe";
 
   const isDirty =
     orderStatus !== order.status ||
@@ -98,7 +100,7 @@ export default function StatusUpdatePanel({ order, token, onSuccess }) {
         </div>
 
         {/* ── Payment Status — manual methods only ── */}
-        {isManualPayment ? (
+        {!isStripePayment && isManualPayment ? (
           <div>
             <div className="flex items-center gap-1.5 mb-1.5">
               <label className="text-xs font-semibold text-slate-600">

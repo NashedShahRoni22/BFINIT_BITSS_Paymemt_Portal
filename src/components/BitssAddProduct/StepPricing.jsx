@@ -1,8 +1,9 @@
-import { Plus, Trash2, Info } from "lucide-react";
+import { Plus, Trash2, Info, Truck } from "lucide-react";
 import { SelectInput, TextInput, SectionCard, InfoBox, Toggle } from "../Ui";
 import { DISCOUNT_TYPES, SUB_DISCOUNT_TYPES } from "../../hooks/useProductForm";
 import { useCountries } from "../../hooks/useCountries";
 import { useVariants } from "../../hooks/useVariants";
+import { useDeliveryCharges } from "../../hooks/useDeliveryCharges";
 
 // ─── Single price row ─────────────────────────────────────────────────────────
 function PriceRow({
@@ -13,16 +14,35 @@ function PriceRow({
   showVariants,
   canRemove,
   isUsb,
+  showDeliveryCharge,
+  deliveryCharges,
 }) {
   const { data: countries, isLoading } = useCountries();
   const { data: variants = [], isLoading: variantsLoading } = useVariants();
 
   const set = (field, value) => onChange(index, { ...row, [field]: value });
 
+  // When country changes, auto-resolve the matching delivery charge
+  const handleCountryChange = (countryId) => {
+    const matched = deliveryCharges.find(
+      (d) => String(d.country_id) === String(countryId),
+    );
+    onChange(index, {
+      ...row,
+      country_id: countryId,
+      delivery_charge_id: matched ? String(matched.id) : null,
+    });
+  };
+
   const showDiscount = row.discount_type && row.discount_type !== "";
 
   const selectedCountry = countries?.find(
     (c) => String(c.id) === String(row.country_id),
+  );
+
+  // Delivery charges filtered to the selected country
+  const countryDeliveryCharges = deliveryCharges.filter(
+    (d) => String(d.country_id) === String(row.country_id),
   );
 
   const CurrencySymbol = () =>
@@ -77,7 +97,7 @@ function PriceRow({
           </label>
           <SelectInput
             value={row.country_id}
-            onChange={(e) => set("country_id", e.target.value)}
+            onChange={(e) => handleCountryChange(e.target.value)}
             error={!row.country_id}
           >
             <option value="" disabled>
@@ -214,6 +234,40 @@ function PriceRow({
           </>
         )}
       </div>
+
+      {/* Delivery charge — auto-resolved, read-only display */}
+      {showDeliveryCharge && (
+        <div className="border-t border-gray-200 pt-3 mt-1">
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
+            <Truck size={11} />
+            Delivery Charge
+          </label>
+          {!row.country_id ? (
+            <p className="text-xs text-gray-400 italic">
+              Select a country first.
+            </p>
+          ) : countryDeliveryCharges.length === 0 ? (
+            <p className="text-xs text-amber-600 italic">
+              ⚠ No delivery charge configured for this country.
+            </p>
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+              <Truck size={13} className="text-blue-500 flex-shrink-0" />
+              <span className="text-sm font-semibold text-blue-800">
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: countryDeliveryCharges[0].currency,
+                  }}
+                />{" "}
+                {countryDeliveryCharges[0].amount}
+              </span>
+              <span className="text-xs text-blue-500 ml-1">
+                — {countryDeliveryCharges[0].country_name}
+              </span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -222,6 +276,10 @@ function PriceRow({
 function ProductPricesSection({ form, update, errors }) {
   const prices = form.product_prices;
   const showVariants = form.is_usb && form.is_product_variant;
+
+  // Fetch all delivery charges once; PriceRow filters by country_id
+  const { data: deliveryCharges = [], isLoading: dcLoading } =
+    useDeliveryCharges();
 
   const addRow = () => {
     update("product_prices", [
@@ -234,6 +292,7 @@ function ProductPricesSection({ form, update, errors }) {
         discount_amount: "",
         discount_expire_at: "",
         unit: "",
+        delivery_charge_id: null,
       },
     ]);
   };
@@ -267,10 +326,30 @@ function ProductPricesSection({ form, update, errors }) {
         </div>
       </InfoBox>
 
+      {/* Delivery charge toggle */}
+      <div className="mt-4 flex items-start gap-3 p-3.5 bg-blue-50 border border-blue-200 rounded-xl">
+        <Truck size={16} className="text-blue-500 mt-0.5 flex-shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-bold text-blue-800 mb-0.5">
+            Delivery Charge
+          </p>
+          <p className="text-xs text-blue-600 leading-relaxed">
+            Enable if this product requires a delivery charge. The charge will
+            be automatically resolved from the selected country.
+          </p>
+        </div>
+        <Toggle
+          checked={form.is_delivery_charge}
+          onChange={(val) => update("is_delivery_charge", val)}
+          label=""
+        />
+      </div>
+
       {prices.length === 0 ? (
         <div className="mt-4 border-2 border-dashed border-gray-200 rounded-xl p-8 text-center">
           <p className="text-sm text-gray-400">
-            No country prices yet — click "Add Country Price" to start.
+            No country prices yet — click &quot;Add Country Price&quot; to
+            start.
           </p>
         </div>
       ) : (
@@ -285,6 +364,8 @@ function ProductPricesSection({ form, update, errors }) {
               showVariants={showVariants}
               canRemove={prices.length > 1}
               isUsb={form.is_usb}
+              showDeliveryCharge={form.is_delivery_charge}
+              deliveryCharges={dcLoading ? [] : deliveryCharges}
             />
           ))}
         </div>

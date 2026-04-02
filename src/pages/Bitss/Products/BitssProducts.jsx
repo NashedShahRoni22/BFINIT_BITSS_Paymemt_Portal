@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Package, LayoutGrid, Globe, Landmark } from "lucide-react";
+import { Package, LayoutGrid, Globe, Landmark, Truck } from "lucide-react";
 import Categories from "../../../components/categories/Categories";
 import Products from "../../../components/products/Products";
 import Countries from "../../../components/countries/Countries";
 import BankInformation from "../BankInformation/BankInformation";
+import DeliveryCharges from "../../../components/delivery/DeliveryCharges";
 
 const TABS = [
   {
@@ -23,6 +24,12 @@ const TABS = [
     label: "Countries",
     icon: <Globe size={16} />,
     component: <Countries />,
+  },
+  {
+    id: "delivery",
+    label: "Delivery Charges",
+    icon: <Truck size={16} />,
+    component: <DeliveryCharges />,
   },
   {
     id: "bank",
@@ -45,17 +52,18 @@ export default function BitssProducts() {
           Product & Category Management
         </h1>
         <p className="text-neutral-600">
-          Manage products, categories, and inventory
+          Manage products, categories, countries, delivery charges, and
+          inventory
         </p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-4 mb-6 border-b border-neutral-200">
+      <div className="flex gap-4 mb-6 border-b border-neutral-200 overflow-x-auto">
         {TABS.map(({ id, label, icon }) => (
           <button
             key={id}
             onClick={() => setActiveTab(id)}
-            className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors border-b-2 ${
+            className={`flex items-center gap-2 px-4 py-3 font-medium transition-colors border-b-2 whitespace-nowrap ${
               activeTab === id
                 ? "border-primary text-primary"
                 : "border-transparent text-neutral-600 hover:cursor-pointer hover:text-neutral-800"

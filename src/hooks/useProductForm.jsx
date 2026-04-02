@@ -7,11 +7,16 @@ export const INITIAL_FORM = {
   is_combo: false,
   is_usb: false,
   is_product_variant: false,
+  is_domain: false,
   sort_description: "",
   product_variants: [],
   variants: [], // selected variant IDs for is_product_variant USB products
   selected_products: [],
   product_details: [""],
+  // is_delivery_charge is a top-level toggle — when true each price row
+  // may carry a delivery_charge_id (nullable: the charge that applies for that
+  // country). The backend accepts null to mean "no charge for this country".
+  is_delivery_charge: false,
   product_prices: [],
   subscription_periods: [
     { duration: "12", discount_type: "", amount: "", status: true },
@@ -54,6 +59,8 @@ export function buildPayload(form) {
     is_combo: form.is_combo,
     is_usb: form.is_usb,
     is_product_variant: form.is_product_variant,
+    is_domain: form.is_domain,
+    is_delivery_charge: form.is_delivery_charge,
     sort_description: form.sort_description,
     product_details: form.product_details.filter((d) => d.trim() !== ""),
     product_prices: form.product_prices

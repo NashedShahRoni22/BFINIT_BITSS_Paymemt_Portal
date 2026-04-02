@@ -188,7 +188,7 @@ export default function OrderDetail() {
   });
 
   const order = data?.data;
-  const payment = order?.payments?.[0];
+  const payment = order?.payment;
   const currency = parseCurrency(order?.country?.currency_icon);
 
   return (
