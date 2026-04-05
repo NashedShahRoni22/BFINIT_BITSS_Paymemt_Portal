@@ -8,6 +8,24 @@ import rectangle from "../../assets/shapes/rectangle.png";
 import useAuth from "../../hooks/useAuth";
 import { useLogin } from "../../hooks/useLogin";
 
+import {
+  Package,
+  LayoutGrid,
+  Globe,
+  Truck,
+  Landmark,
+  ClipboardList,
+} from "lucide-react";
+
+const FEATURES = [
+  { icon: Package, label: "Products" },
+  { icon: LayoutGrid, label: "Categories" },
+  { icon: Globe, label: "Countries" },
+  { icon: Truck, label: "Delivery Charges" },
+  { icon: Landmark, label: "Bank Info" },
+  { icon: ClipboardList, label: "Orders" },
+];
+
 export default function Login() {
   const { setUser } = useAuth();
   const navigate = useNavigate();
@@ -41,7 +59,7 @@ export default function Login() {
           onSubmit={handleSubmit}
           className="mx-auto w-full flex flex-1 flex-col justify-center md:w-3/4"
         >
-          <img src={bfinitLogo} alt="bfinit logo" className="w-24" />
+          <img src="/logo.png" alt="bitss logo" className="w-24" />
           <h1 className="text-center text-4xl font-bold md:text-left my-5">
             Welcome Back!
           </h1>
@@ -112,25 +130,37 @@ export default function Login() {
       </div>
 
       {/* Right Side Banner Container */}
-      <div className="relative hidden h-screen max-h-[1080px] w-full flex-col items-center justify-center overflow-hidden bg-[#4a3aff] px-5 md:flex md:w-1/2">
+      <div className="relative hidden h-screen max-h-[1080px] w-full flex-col items-center justify-center overflow-hidden bg-red-800 px-5 md:flex md:w-1/2">
         <h2 className="text-center text-4xl font-bold text-white">
-          Manage BFINIT & BITSS Order&apos;s
+          Run BITSS Your Way
         </h2>
-        <p className="mt-6 max-w-xl text-center text-lg text-neutral-200">
-          Effortlessly manage your BFINIT and BITSS orders with a powerful and
-          intuitive dashboard. Add, update, and track your orders seamlessly,
-          all in one place.
+        <p className="mt-4 max-w-md text-center text-base text-red-100">
+          From products to payments, categories to countries - everything you
+          need to keep BITSS moving.
         </p>
+
+        {/* Feature list */}
+        <div className="mt-10 grid grid-cols-2 gap-3 w-full max-w-sm">
+          {FEATURES.map(({ icon: Icon, label }) => (
+            <div
+              key={label}
+              className="flex items-center gap-2 bg-white/10 rounded-lg px-4 py-2.5 text-sm text-white font-medium"
+            >
+              <Icon size={16} className="text-red-200 flex-shrink-0" />
+              {label}
+            </div>
+          ))}
+        </div>
 
         <img
           src={shapes1}
           alt=""
-          className="absolute -top-20 left-0 w-40 rotate-90"
+          className="absolute -top-20 left-0 w-40 rotate-90 brightness-0 invert opacity-20"
         />
         <img
           src={rectangle}
           alt=""
-          className="absolute -right-10 bottom-0 w-32 -rotate-90"
+          className="absolute -right-10 bottom-0 w-32 -rotate-90 brightness-0 invert opacity-20"
         />
       </div>
     </section>

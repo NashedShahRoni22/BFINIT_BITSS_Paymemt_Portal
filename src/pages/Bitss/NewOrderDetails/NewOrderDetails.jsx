@@ -261,27 +261,6 @@ export default function OrderDetail() {
                   </div>
                   <ProductTypePill product={order.product} />
                 </div>
-                {order.product.description && (
-                  <p className="text-sm text-slate-500 mb-3">
-                    {order.product.description}
-                  </p>
-                )}
-                {order.product.features?.length > 0 && (
-                  <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-                      Features
-                    </p>
-                    {order.product.features.map((f, i) => (
-                      <div
-                        key={i}
-                        className="flex items-center gap-2 text-sm text-slate-600"
-                      >
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                        {f.name ?? f}
-                      </div>
-                    ))}
-                  </div>
-                )}
               </SectionCard>
 
               {/* Payment details */}
