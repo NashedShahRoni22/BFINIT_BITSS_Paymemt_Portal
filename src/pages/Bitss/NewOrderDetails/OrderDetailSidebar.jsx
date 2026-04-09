@@ -1,5 +1,6 @@
-import { CalendarDays, Globe, RefreshCw, Ban } from "lucide-react";
+import { CalendarDays, RefreshCw, Ban } from "lucide-react";
 import StatusUpdatePanel from "./StatusUpdatePanel";
+import { formatPrice } from "../../../utils/formatPrice";
 
 function FieldRow({ label, children }) {
   return (
@@ -48,12 +49,6 @@ export default function OrderDetailSidebar({ order, token, onStatusUpdated }) {
               ? formatDateShort(order.expiry_date)
               : "No Expiry"}
           </FieldRow>
-          <FieldRow label="Country">
-            <span className="flex items-center gap-1.5">
-              <Globe className="w-3.5 h-3.5 text-slate-400" />
-              {order.country?.name ?? "—"}
-            </span>
-          </FieldRow>
           <FieldRow label="Renewal">
             {order.is_renewal ? (
               <span className="flex items-center gap-1 text-indigo-600">
@@ -71,9 +66,23 @@ export default function OrderDetailSidebar({ order, token, onStatusUpdated }) {
             </span>
             <span className="text-lg font-bold text-slate-900">
               {currency}
-              {order.amount?.toLocaleString()}
+              {formatPrice(order.amount)}
             </span>
           </div>
+        </div>
+      </div>
+
+      {/* ── Customer ── */}
+      <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/60">
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-widest">
+            Customer
+          </h3>
+        </div>
+        <div className="px-5 py-4 space-y-2.5">
+          <FieldRow label="Name">{order.user?.name ?? "—"}</FieldRow>
+          <FieldRow label="Email">{order.user?.email ?? "—"}</FieldRow>
+          <FieldRow label="Address">{order.user?.address ?? "—"}</FieldRow>
         </div>
       </div>
 

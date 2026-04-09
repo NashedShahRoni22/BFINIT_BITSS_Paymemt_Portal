@@ -3,12 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
   AlertCircle,
-  CheckCircle2,
   Package,
   Layers,
   Usb,
   RotateCcw,
-  Building2,
   RefreshCw,
 } from "lucide-react";
 import useAuth from "../../../hooks/useAuth";
@@ -16,6 +14,7 @@ import OrderDetailSidebar from "./OrderDetailSidebar";
 import OrderStatusBadge, {
   PaymentStatusBadge,
 } from "../NewOrders/OrderStatusBadge";
+import { formatPrice } from "../../../utils/formatPrice";
 
 const baseUrl = import.meta.env.VITE_NEW_BASE_URL;
 
@@ -99,46 +98,6 @@ function ProductTypePill({ product }) {
   );
 }
 
-function BankAccountCard({ account }) {
-  return (
-    <div className="flex items-start gap-3 p-3 bg-slate-50 border border-slate-100 rounded-lg">
-      <div className="p-1.5 bg-white border border-slate-200 rounded-md mt-0.5">
-        <Building2 className="w-3.5 h-3.5 text-slate-500" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-slate-700">
-          {account.bank_name}
-        </p>
-        <div className="mt-1 grid grid-cols-2 gap-x-4 gap-y-0.5">
-          {account.account_number && (
-            <span className="text-xs text-slate-500">
-              Acc:{" "}
-              <span className="font-mono text-slate-700">
-                {account.account_number}
-              </span>
-            </span>
-          )}
-          {account.branch_name && (
-            <span className="text-xs text-slate-500">
-              Branch: {account.branch_name}
-            </span>
-          )}
-          {account.routing_number && (
-            <span className="text-xs text-slate-500">
-              Routing: {account.routing_number}
-            </span>
-          )}
-          {account.swift_code && (
-            <span className="text-xs text-slate-500">
-              Swift: {account.swift_code}
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function DetailSkeleton() {
@@ -205,9 +164,9 @@ export default function OrderDetail() {
             </button>
             {order ? (
               <div>
-                <div className="flex items-center gap-2.5 flex-wrap">
+                <div className="flex items-center gap-2.5 flex-wrap capitalize">
                   <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-                    Order #{order.id}
+                    Order #{order.order_number}
                   </h1>
                   <OrderStatusBadge status={order.status} />
                 </div>
@@ -241,16 +200,15 @@ export default function OrderDetail() {
           </div>
         )}
 
-        {/* ── Body ── */}
         {isLoading ? (
           <DetailSkeleton />
         ) : order ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            {/* ── Left: 2-col main area ── */}
+            {/* ── Left + Center: main content (2 cols) ── */}
             <div className="lg:col-span-2 space-y-5">
               {/* Product */}
               <SectionCard title="Product">
-                <div className="flex items-start justify-between gap-3 mb-4">
+                <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-base font-semibold text-slate-800">
                       {order.product.name}
@@ -263,7 +221,7 @@ export default function OrderDetail() {
                 </div>
               </SectionCard>
 
-              {/* Payment details */}
+              {/* Payment */}
               <SectionCard title="Payment">
                 <div className="flex items-center justify-between mb-3">
                   <span className="text-sm text-slate-500">Status</span>
@@ -272,7 +230,7 @@ export default function OrderDetail() {
                 <FieldRow label="Amount">
                   <span className="text-base font-bold text-slate-900">
                     {currency}
-                    {order.amount?.toLocaleString()}
+                    {formatPrice(order.amount)}
                   </span>
                 </FieldRow>
                 <FieldRow label="Method">
@@ -290,25 +248,20 @@ export default function OrderDetail() {
                     {formatDate(payment.paid_at)}
                   </FieldRow>
                 )}
-                {order.bank_accounts?.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                      Bank Accounts
-                    </p>
-                    {order.bank_accounts.map((acc, i) => (
-                      <BankAccountCard key={i} account={acc} />
-                    ))}
-                  </div>
+                {order.domain && (
+                  <FieldRow label="Domain">{order.domain}</FieldRow>
                 )}
               </SectionCard>
             </div>
 
             {/* ── Right sidebar ── */}
-            <OrderDetailSidebar
-              order={order}
-              token={token}
-              onStatusUpdated={() => refetch()}
-            />
+            <div className="lg:col-span-1">
+              <OrderDetailSidebar
+                order={order}
+                token={token}
+                onStatusUpdated={() => refetch()}
+              />
+            </div>
           </div>
         ) : null}
       </div>

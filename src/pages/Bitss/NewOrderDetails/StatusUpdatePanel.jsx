@@ -19,6 +19,7 @@ export default function StatusUpdatePanel({ order, token, onSuccess }) {
   const queryClient = useQueryClient();
   const payment = order?.payment;
   const paymentMethod = payment?.payment_method ?? "";
+  const defaultPaymentStatus = payment?.status;
   const isManualPayment = MANUAL_PAYMENT_METHODS.includes(paymentMethod);
 
   const [orderStatus, setOrderStatus] = useState(order.status ?? "processing");
@@ -33,13 +34,17 @@ export default function StatusUpdatePanel({ order, token, onSuccess }) {
     orderStatus !== order.status ||
     (isManualPayment && paymentStatus !== payment?.status);
 
+  const resolvedPaymentStatus = isManualPayment
+    ? paymentStatus
+    : (payment?.status ?? "pending");
+
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       const body = {
         order_status: orderStatus,
-        payment_status: isManualPayment
-          ? paymentStatus
-          : (payment?.status ?? "pending"),
+        ...(defaultPaymentStatus !== "paid" && {
+          payment_status: resolvedPaymentStatus,
+        }),
         payment_method: paymentMethod || "bank_transfer",
       };
       const res = await fetch(`${baseUrl}/orders/order/approve/${order.id}`, {

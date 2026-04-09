@@ -1,6 +1,7 @@
 import { ChevronRight, Package, Usb, Layers, RotateCcw } from "lucide-react";
 import OrderStatusBadge, { PaymentStatusBadge } from "./OrderStatusBadge";
 import { useNavigate } from "react-router";
+import { formatPrice } from "../../../utils/formatPrice";
 
 function ProductTypePill({ order }) {
   const { is_combo, is_variant, is_usb } = order.product;
@@ -81,7 +82,7 @@ export default function OrderRow({ order }) {
       <td className="px-4 py-3.5 whitespace-nowrap">
         <span className="text-sm font-semibold text-slate-800">
           {currencyIcon}
-          {order.amount.toLocaleString()}
+          {formatPrice(order.amount)}
         </span>
         {order.discount && (
           <div className="text-xs text-emerald-600">-{order.discount} off</div>
@@ -89,13 +90,13 @@ export default function OrderRow({ order }) {
       </td>
 
       {/* Order Status */}
-      <td className="px-4 py-3.5 whitespace-nowrap">
+      <td className="px-4 py-3.5 whitespace-nowrap capitalize">
         <OrderStatusBadge status={order.status} />
       </td>
 
       {/* Payment */}
       <td className="px-4 py-3.5 whitespace-nowrap">
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col capitalize gap-1">
           <PaymentStatusBadge status={payment?.status} />
           <span className="text-xs text-slate-400 capitalize">
             {payment?.payment_method?.replace("_", " ")}
