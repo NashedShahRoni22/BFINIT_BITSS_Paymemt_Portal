@@ -1,4 +1,4 @@
-import { CalendarDays, RefreshCw, Ban } from "lucide-react";
+import { CalendarDays, RefreshCw, Ban, Globe } from "lucide-react";
 import StatusUpdatePanel from "./StatusUpdatePanel";
 import { formatPrice } from "../../../utils/formatPrice";
 
@@ -44,11 +44,20 @@ export default function OrderDetailSidebar({ order, token, onStatusUpdated }) {
               {formatDateShort(order.start_at)}
             </span>
           </FieldRow>
-          <FieldRow label="Expiry">
-            {order.expiry_date
-              ? formatDateShort(order.expiry_date)
-              : "No Expiry"}
+          <FieldRow label="Expire Date">
+            <span className="flex items-center gap-1.5">
+              <CalendarDays className="w-3.5 h-3.5 text-slate-400" />
+              {order.expire_at ? formatDateShort(order.expire_at) : "No Expiry"}
+            </span>
           </FieldRow>
+          {order?.domain && (
+            <FieldRow label="Domain">
+              <span className="flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5 text-slate-400" />
+                {order.domain}
+              </span>
+            </FieldRow>
+          )}
           <FieldRow label="Renewal">
             {order.is_renewal ? (
               <span className="flex items-center gap-1 text-indigo-600">
