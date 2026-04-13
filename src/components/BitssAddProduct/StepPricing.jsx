@@ -1,48 +1,28 @@
-import { Plus, Trash2, Info, Truck } from "lucide-react";
+import { Plus, Trash2, Info } from "lucide-react";
 import { SelectInput, TextInput, SectionCard, InfoBox, Toggle } from "../Ui";
-import { DISCOUNT_TYPES, SUB_DISCOUNT_TYPES } from "../../hooks/useProductForm";
+import { DISCOUNT_TYPES } from "../../hooks/useProductForm";
 import { useCountries } from "../../hooks/useCountries";
 import { useVariants } from "../../hooks/useVariants";
-import { useDeliveryCharges } from "../../hooks/useDeliveryCharges";
 
-// ─── Single price row ─────────────────────────────────────────────────────────
-function PriceRow({
+// ─── Single period row ────────────────────────────────────────────────────────
+function PeriodRow({
   row,
   index,
   onChange,
   onRemove,
-  showVariants,
   canRemove,
   isUsb,
-  showDeliveryCharge,
-  deliveryCharges,
+  showVariants,
 }) {
   const { data: countries, isLoading } = useCountries();
   const { data: variants = [], isLoading: variantsLoading } = useVariants();
 
   const set = (field, value) => onChange(index, { ...row, [field]: value });
 
-  // When country changes, auto-resolve the matching delivery charge
-  const handleCountryChange = (countryId) => {
-    const matched = deliveryCharges.find(
-      (d) => String(d.country_id) === String(countryId),
-    );
-    onChange(index, {
-      ...row,
-      country_id: countryId,
-      delivery_charge_id: matched ? String(matched.id) : null,
-    });
-  };
-
   const showDiscount = row.discount_type && row.discount_type !== "";
 
   const selectedCountry = countries?.find(
     (c) => String(c.id) === String(row.country_id),
-  );
-
-  // Delivery charges filtered to the selected country
-  const countryDeliveryCharges = deliveryCharges.filter(
-    (d) => String(d.country_id) === String(row.country_id),
   );
 
   const CurrencySymbol = () =>
@@ -64,7 +44,7 @@ function PriceRow({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-            Price Entry #{index + 1}
+            Entry #{index + 1}
           </span>
           {selectedCountry && (
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold bg-indigo-50 border border-indigo-200 text-indigo-700 px-2.5 py-0.5 rounded-full">
@@ -88,16 +68,16 @@ function PriceRow({
         )}
       </div>
 
-      {/* Row 1: country (required), price, variant, unit */}
+      {/* Row 1: core fields */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {/* Country — required */}
+        {/* Country — always required */}
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
             Country <span className="text-red-500">*</span>
           </label>
           <SelectInput
             value={row.country_id}
-            onChange={(e) => handleCountryChange(e.target.value)}
+            onChange={(e) => set("country_id", e.target.value)}
             error={!row.country_id}
           >
             <option value="" disabled>
@@ -140,26 +120,19 @@ function PriceRow({
           )}
         </div>
 
-        {/* Variant — only if USB with product_variant */}
-        {showVariants && (
+        {/* Duration — non-USB only */}
+        {!isUsb && (
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-              Variant
+              Duration (mo.) <span className="text-red-500">*</span>
             </label>
-            <SelectInput
-              value={row.variant_id}
-              onChange={(e) => set("variant_id", e.target.value)}
-            >
-              <option value="">
-                {variantsLoading ? "Loading…" : "All Variants"}
-              </option>
-              {!variantsLoading &&
-                variants.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {v.variant_name ?? v.name ?? `Variant ${v.id}`}
-                  </option>
-                ))}
-            </SelectInput>
+            <TextInput
+              type="number"
+              min="1"
+              value={row.duration}
+              onChange={(e) => set("duration", e.target.value)}
+              placeholder="12"
+            />
           </div>
         )}
 
@@ -181,10 +154,33 @@ function PriceRow({
             />
           </div>
         )}
+
+        {/* Variant — USB with variants only */}
+        {showVariants && (
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Variant
+            </label>
+            <SelectInput
+              value={row.variant_id}
+              onChange={(e) => set("variant_id", e.target.value)}
+            >
+              <option value="">
+                {variantsLoading ? "Loading…" : "All Variants"}
+              </option>
+              {!variantsLoading &&
+                variants.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.variant_name ?? v.name ?? `Variant ${v.id}`}
+                  </option>
+                ))}
+            </SelectInput>
+          </div>
+        )}
       </div>
 
-      {/* Row 2: discount fields — only enabled after country selected */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      {/* Row 2: discount + status */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 items-end">
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
             Discount Type
@@ -212,12 +208,10 @@ function PriceRow({
                 type="number"
                 step="0.01"
                 min="0"
-                value={row.discount_amount}
-                onChange={(e) => set("discount_amount", e.target.value)}
+                value={row.amount}
+                onChange={(e) => set("amount", e.target.value)}
                 placeholder={
-                  row.discount_type === "percentage"
-                    ? "e.g. 10 (%)"
-                    : "e.g. 5.00"
+                  row.discount_type === "percent" ? "e.g. 10" : "e.g. 5.00"
                 }
               />
             </div>
@@ -227,185 +221,59 @@ function PriceRow({
               </label>
               <TextInput
                 type="datetime-local"
-                value={row.discount_expire_at}
-                onChange={(e) => set("discount_expire_at", e.target.value)}
+                value={row.discount_expires_at}
+                onChange={(e) => set("discount_expires_at", e.target.value)}
               />
             </div>
           </>
         )}
-      </div>
 
-      {/* Delivery charge — auto-resolved, read-only display */}
-      {showDeliveryCharge && (
-        <div className="border-t border-gray-200 pt-3 mt-1">
-          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
-            <Truck size={11} />
-            Delivery Charge
+        {/* Status toggle */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            Status
           </label>
-          {!row.country_id ? (
-            <p className="text-xs text-gray-400 italic">
-              Select a country first.
-            </p>
-          ) : countryDeliveryCharges.length === 0 ? (
-            <p className="text-xs text-amber-600 italic">
-              ⚠ No delivery charge configured for this country.
-            </p>
-          ) : (
-            <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-              <Truck size={13} className="text-blue-500 flex-shrink-0" />
-              <span className="text-sm font-semibold text-blue-800">
-                <span
-                  dangerouslySetInnerHTML={{
-                    __html: countryDeliveryCharges[0].currency,
-                  }}
-                />{" "}
-                {countryDeliveryCharges[0].amount}
-              </span>
-              <span className="text-xs text-blue-500 ml-1">
-                — {countryDeliveryCharges[0].country_name}
-              </span>
-            </div>
-          )}
+          <Toggle
+            checked={row.status}
+            onChange={(val) => set("status", val)}
+            label={row.status ? "Active" : "Inactive"}
+          />
         </div>
-      )}
+      </div>
     </div>
   );
 }
 
-// ─── Product prices section ───────────────────────────────────────────────────
-function ProductPricesSection({ form, update, errors }) {
-  const prices = form.product_prices;
-  const showVariants = form.is_usb && form.is_product_variant;
-
-  // Fetch all delivery charges once; PriceRow filters by country_id
-  const { data: deliveryCharges = [], isLoading: dcLoading } =
-    useDeliveryCharges();
+// ─── Pricing section (unified — all product types) ────────────────────────────
+function PricingSection({ form, update, errors }) {
+  const periods = form.subscription_periods;
+  const isUsb = form.is_usb;
+  const showVariants = isUsb && form.is_product_variant;
 
   const addRow = () => {
-    update("product_prices", [
-      ...prices,
+    update("subscription_periods", [
+      ...periods,
       {
+        duration: "",
+        price: "",
         country_id: "",
         variant_id: "",
-        price: "",
-        discount_type: "",
-        discount_amount: "",
-        discount_expire_at: "",
         unit: "",
-        delivery_charge_id: null,
+        discount_type: "",
+        amount: "",
+        discount_expires_at: "",
+        status: true,
       },
     ]);
   };
 
   const updateRow = (index, updated) => {
-    const arr = [...prices];
-    arr[index] = updated;
-    update("product_prices", arr);
-  };
-
-  const removeRow = (index) => {
-    update(
-      "product_prices",
-      prices.filter((_, i) => i !== index),
-    );
-  };
-
-  return (
-    <SectionCard
-      title="Country Prices"
-      description="Add a price for each country you want to sell in — every entry requires a country"
-    >
-      <InfoBox variant="blue">
-        <div className="flex items-start gap-2">
-          <Info size={13} className="mt-0.5 flex-shrink-0" />
-          <span>
-            Every price entry <strong>must have a country selected</strong>. The
-            currency symbol is pulled automatically from your country settings.
-            {showVariants && " You can also assign a price per USB variant."}
-          </span>
-        </div>
-      </InfoBox>
-
-      {/* Delivery charge toggle */}
-      <div className="mt-4 flex items-start gap-3 p-3.5 bg-blue-50 border border-blue-200 rounded-xl">
-        <Truck size={16} className="text-blue-500 mt-0.5 flex-shrink-0" />
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-bold text-blue-800 mb-0.5">
-            Delivery Charge
-          </p>
-          <p className="text-xs text-blue-600 leading-relaxed">
-            Enable if this product requires a delivery charge. The charge will
-            be automatically resolved from the selected country.
-          </p>
-        </div>
-        <Toggle
-          checked={form.is_delivery_charge}
-          onChange={(val) => update("is_delivery_charge", val)}
-          label=""
-        />
-      </div>
-
-      {prices.length === 0 ? (
-        <div className="mt-4 border-2 border-dashed border-gray-200 rounded-xl p-8 text-center">
-          <p className="text-sm text-gray-400">
-            No country prices yet — click &quot;Add Country Price&quot; to
-            start.
-          </p>
-        </div>
-      ) : (
-        <div className="mt-4 space-y-3">
-          {prices.map((row, i) => (
-            <PriceRow
-              key={i}
-              row={row}
-              index={i}
-              onChange={updateRow}
-              onRemove={removeRow}
-              showVariants={showVariants}
-              canRemove={prices.length > 1}
-              isUsb={form.is_usb}
-              showDeliveryCharge={form.is_delivery_charge}
-              deliveryCharges={dcLoading ? [] : deliveryCharges}
-            />
-          ))}
-        </div>
-      )}
-
-      {errors.product_prices && (
-        <p className="text-xs text-red-500 font-medium mt-2">
-          ⚠ {errors.product_prices}
-        </p>
-      )}
-
-      <button
-        type="button"
-        onClick={addRow}
-        className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
-      >
-        <Plus size={13} /> Add Country Price
-      </button>
-    </SectionCard>
-  );
-}
-
-// ─── Subscription periods section ─────────────────────────────────────────────
-function SubscriptionPeriodsSection({ form, update, errors }) {
-  const periods = form.subscription_periods;
-
-  const addPeriod = () => {
-    update("subscription_periods", [
-      ...periods,
-      { duration: "", discount_type: "", amount: "", status: true },
-    ]);
-  };
-
-  const updatePeriod = (index, field, value) => {
     const arr = [...periods];
-    arr[index] = { ...arr[index], [field]: value };
+    arr[index] = updated;
     update("subscription_periods", arr);
   };
 
-  const removePeriod = (index) => {
+  const removeRow = (index) => {
     update(
       "subscription_periods",
       periods.filter((_, i) => i !== index),
@@ -414,109 +282,48 @@ function SubscriptionPeriodsSection({ form, update, errors }) {
 
   return (
     <SectionCard
-      title="Subscription Periods"
-      description="Required for digital products — set pricing for 12, 24, 36-month commitments"
+      title={isUsb ? "Unit Pricing" : "Subscription Pricing"}
+      description={
+        isUsb
+          ? "Add a price per country and unit quantity"
+          : "Add a price per country and subscription duration"
+      }
     >
-      <div className="hidden md:grid grid-cols-12 gap-2 px-2 mb-2">
-        {["Duration (mo.)", "Discount Type", "Amount", "Active", ""].map(
-          (h, i) => (
-            <span
+      <InfoBox variant="blue">
+        <div className="flex items-start gap-2">
+          <Info size={13} className="mt-0.5 flex-shrink-0" />
+          <span>
+            Every entry <strong>must have a country and price</strong>.
+            {!isUsb &&
+              " Duration (months) is required for subscription products."}
+            {isUsb && " Unit quantity is required for USB products."}
+            {showVariants && " You can also assign a price per USB variant."}
+          </span>
+        </div>
+      </InfoBox>
+
+      {periods.length === 0 ? (
+        <div className="mt-4 border-2 border-dashed border-gray-200 rounded-xl p-8 text-center">
+          <p className="text-sm text-gray-400">
+            No pricing entries yet — click "Add Entry" to start.
+          </p>
+        </div>
+      ) : (
+        <div className="mt-4 space-y-3">
+          {periods.map((row, i) => (
+            <PeriodRow
               key={i}
-              className={`text-xs font-semibold text-gray-400 uppercase tracking-wider
-              ${i === 4 ? "col-span-1" : i === 3 ? "col-span-2" : "col-span-2"}`}
-            >
-              {h}
-            </span>
-          ),
-        )}
-      </div>
-
-      <div className="space-y-2.5">
-        {periods.map((period, i) => (
-          <div
-            key={i}
-            className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center bg-gray-50 border border-gray-200 rounded-xl p-3"
-          >
-            {/* Duration */}
-            <div className="md:col-span-3">
-              <label className="block text-xs font-semibold text-gray-500 md:hidden mb-1">
-                Duration (months)
-              </label>
-              <TextInput
-                type="number"
-                min="1"
-                value={period.duration}
-                onChange={(e) => updatePeriod(i, "duration", e.target.value)}
-                placeholder="12"
-              />
-            </div>
-
-            {/* Discount Type */}
-            <div className="md:col-span-3">
-              <label className="block text-xs font-semibold text-gray-500 md:hidden mb-1">
-                Discount Type
-              </label>
-              <SelectInput
-                value={period.discount_type}
-                onChange={(e) =>
-                  updatePeriod(i, "discount_type", e.target.value)
-                }
-              >
-                <option value="">No Discount</option>
-                {SUB_DISCOUNT_TYPES.map((d) => (
-                  <option key={d.value} value={d.value}>
-                    {d.label}
-                  </option>
-                ))}
-              </SelectInput>
-            </div>
-
-            {/* Amount */}
-            <div className="md:col-span-3">
-              <label className="block text-xs font-semibold text-gray-500 md:hidden mb-1">
-                Amount
-              </label>
-              <TextInput
-                type="number"
-                step="0.01"
-                min="0"
-                value={period.amount}
-                onChange={(e) => updatePeriod(i, "amount", e.target.value)}
-                placeholder={
-                  period.discount_type === "percent" ? "e.g. 10" : "e.g. 5.00"
-                }
-              />
-            </div>
-
-            {/* Status toggle */}
-            <div className="md:col-span-2 flex items-center gap-2">
-              <label className="text-xs font-semibold text-gray-500 md:hidden">
-                Active
-              </label>
-              <Toggle
-                checked={period.status}
-                onChange={(val) => updatePeriod(i, "status", val)}
-                label={period.status ? "Active" : "Inactive"}
-              />
-            </div>
-
-            {/* Remove */}
-            <div className="md:col-span-1 flex justify-end">
-              <button
-                type="button"
-                onClick={() => periods.length > 1 && removePeriod(i)}
-                className={`p-1.5 rounded-md transition-colors ${
-                  periods.length === 1
-                    ? "text-gray-200 cursor-not-allowed"
-                    : "text-gray-400 hover:text-red-500 hover:bg-red-50"
-                }`}
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
+              row={row}
+              index={i}
+              onChange={updateRow}
+              onRemove={removeRow}
+              canRemove={periods.length > 1}
+              isUsb={isUsb}
+              showVariants={showVariants}
+            />
+          ))}
+        </div>
+      )}
 
       {errors.subscription_periods && (
         <p className="text-xs text-red-500 font-medium mt-2">
@@ -526,10 +333,10 @@ function SubscriptionPeriodsSection({ form, update, errors }) {
 
       <button
         type="button"
-        onClick={addPeriod}
+        onClick={addRow}
         className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors"
       >
-        <Plus size={13} /> Add Period
+        <Plus size={13} /> Add Entry
       </button>
     </SectionCard>
   );
@@ -544,25 +351,24 @@ export default function StepPricing({ form, update, errors }) {
         <p className="text-sm text-gray-500 mt-1">
           Set country-specific prices
           {form.is_usb && form.is_product_variant ? " and per USB variant" : ""}
-          .{!form.is_usb && " Then configure subscription period discounts."}
+          .{!form.is_usb && " Each entry requires a duration and country."}
         </p>
       </div>
 
-      <ProductPricesSection form={form} update={update} errors={errors} />
-
-      {!form.is_usb ? (
-        <SubscriptionPeriodsSection
-          form={form}
-          update={update}
-          errors={errors}
+      {/* Delivery charge toggle */}
+      <SectionCard
+        title="Delivery Settings"
+        description="Configure whether this product has an associated delivery charge"
+      >
+        <Toggle
+          checked={form.is_delivery_charge}
+          onChange={(val) => update("is_delivery_charge", val)}
+          label="Apply delivery charge"
+          description="Enable if customers will be charged a delivery fee for this product. The charge amount is configured in Delivery Charges settings."
         />
-      ) : (
-        <InfoBox variant="amber">
-          🔌 <strong>USB products use unit-based pricing.</strong> Subscription
-          periods are not applicable — customers purchase per unit (1, 6, 10,
-          etc.).
-        </InfoBox>
-      )}
+      </SectionCard>
+
+      <PricingSection form={form} update={update} errors={errors} />
     </div>
   );
 }

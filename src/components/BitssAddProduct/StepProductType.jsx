@@ -45,6 +45,7 @@ export default function StepProductType({ form, update }) {
     update("is_usb", option.sets.is_usb);
     // default ON for USB, reset to false for any other type
     update("is_product_variant", option.sets.is_usb ? true : false);
+    update("is_domain", false);
   };
 
   return (

@@ -2,98 +2,12 @@ import { Search, Globe } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import SunEditor from "suneditor-react";
-import "suneditor/dist/css/suneditor.min.css";
 import { FormField, TextInput, SelectInput, SectionCard, InfoBox } from "../Ui";
 import { STATUS_OPTIONS } from "../../hooks/useProductForm";
-import { useVariants } from "../../hooks/useVariants";
-
-// ─── Sub-component: Variant picker (USB with is_product_variant) ──────────────
-function VariantPicker({ selectedIds, onChange }) {
-  const { data: variants = [], isLoading, isError } = useVariants();
-
-  const toggle = (id) => {
-    const exists = selectedIds.includes(id);
-    onChange(
-      exists ? selectedIds.filter((x) => x !== id) : [...selectedIds, id],
-    );
-  };
-
-  return (
-    <SectionCard
-      title="Storage Variants"
-      description="Select which variants this USB product comes in"
-    >
-      {isLoading && (
-        <p className="text-sm text-gray-400 py-2">Loading variants…</p>
-      )}
-      {isError && (
-        <p className="text-sm text-red-400 py-2">Failed to load variants.</p>
-      )}
-      {!isLoading && !isError && (
-        <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-          {variants.length === 0 && (
-            <p className="text-sm text-gray-400 py-2">No variants found.</p>
-          )}
-          {variants.map((v) => {
-            const isSelected = selectedIds.includes(v.id);
-            return (
-              <button
-                key={v.id}
-                type="button"
-                onClick={() => toggle(v.id)}
-                className={`
-                  w-full flex items-center gap-3 px-4 py-3 rounded-lg border transition-all text-left
-                  ${
-                    isSelected
-                      ? "border-amber-400 bg-amber-50"
-                      : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50"
-                  }
-                `}
-              >
-                <div
-                  className={`
-                  w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all
-                  ${isSelected ? "border-amber-500 bg-amber-500" : "border-gray-300"}
-                `}
-                >
-                  {isSelected && (
-                    <svg
-                      className="w-3 h-3 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={3}
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  )}
-                </div>
-                <span
-                  className={`flex-1 text-sm font-medium ${isSelected ? "text-amber-800" : "text-gray-700"}`}
-                >
-                  {v.name}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-      {selectedIds.length > 0 && (
-        <p className="text-xs font-semibold text-amber-600 mt-2">
-          {selectedIds.length} variant{selectedIds.length !== 1 ? "s" : ""}{" "}
-          selected
-        </p>
-      )}
-    </SectionCard>
-  );
-}
 import { useCountries } from "../../hooks/useCountries";
 import useAuth from "../../hooks/useAuth";
 import { useCategories } from "../../hooks/useCategories";
+import "suneditor/dist/css/suneditor.min.css";
 
 const BASE_URL = import.meta.env.VITE_NEW_BASE_URL;
 
@@ -365,8 +279,19 @@ export default function StepBasicInfo({ form, update, errors }) {
 
           {/* Description — full width, rich text */}
           <div className="md:col-span-2">
-            <FormField label="Description">
-              <div className="rounded-lg overflow-hidden border border-gray-300 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all">
+            <FormField
+              label="Description"
+              required
+              error={errors.sort_description}
+            >
+              <div
+                className={`rounded-lg overflow-hidden border transition-all
+    ${
+      errors.sort_description
+        ? "border-red-400 ring-2 ring-red-400/20"
+        : "border-gray-300 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20"
+    }`}
+              >
                 <SunEditor
                   setContents={form.sort_description}
                   onChange={(content) => update("sort_description", content)}
@@ -425,14 +350,6 @@ export default function StepBasicInfo({ form, update, errors }) {
         />
       )}
 
-      {/* Variant picker — USB with is_product_variant */}
-      {form.is_usb && form.is_product_variant && (
-        <VariantPicker
-          selectedIds={form.variants || []}
-          onChange={(ids) => update("variants", ids)}
-        />
-      )}
-
       {/* Contextual info boxes */}
       {form.is_combo && (
         <InfoBox variant="blue">
@@ -442,9 +359,8 @@ export default function StepBasicInfo({ form, update, errors }) {
       )}
       {form.is_usb && (
         <InfoBox variant="amber">
-          🔌 <strong>USB Device:</strong> Unit-based pricing (e.g. per 1, 6, or
-          10 units) is configured in the Pricing step. Subscription periods do
-          not apply.
+          🔌 <strong>USB Device:</strong> Variant and unit-based pricing is
+          configured in the Pricing step.
         </InfoBox>
       )}
     </div>

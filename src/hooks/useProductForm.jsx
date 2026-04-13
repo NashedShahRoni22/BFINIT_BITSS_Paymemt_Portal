@@ -4,24 +4,53 @@ export const INITIAL_FORM = {
   name: "",
   status: "available",
   category_id: "",
+  is_domain: false,
   is_combo: false,
   is_usb: false,
   is_product_variant: false,
-  is_domain: false,
+  is_delivery_charge: false,
   sort_description: "",
-  product_variants: [],
-  variants: [], // selected variant IDs for is_product_variant USB products
+  // product_variants / variants removed — variant selection now happens
+  // per-row in the Pricing step for USB+variant products.
   selected_products: [],
   product_details: [""],
-  // is_delivery_charge is a top-level toggle — when true each price row
-  // may carry a delivery_charge_id (nullable: the charge that applies for that
-  // country). The backend accepts null to mean "no charge for this country".
-  is_delivery_charge: false,
-  product_prices: [],
+  // All pricing lives here. Shape varies by product type:
+  //   Non-USB  → duration required, no unit/variant
+  //   USB      → no duration, unit required, variant required if is_product_variant
   subscription_periods: [
-    { duration: "12", discount_type: "", amount: "", status: true },
-    { duration: "24", discount_type: "", amount: "", status: true },
-    { duration: "36", discount_type: "", amount: "", status: true },
+    {
+      duration: "12",
+      price: "",
+      country_id: "",
+      variant_id: "",
+      unit: "",
+      discount_type: "",
+      amount: "",
+      discount_expires_at: "",
+      status: true,
+    },
+    {
+      duration: "24",
+      price: "",
+      country_id: "",
+      variant_id: "",
+      unit: "",
+      discount_type: "",
+      amount: "",
+      discount_expires_at: "",
+      status: true,
+    },
+    {
+      duration: "36",
+      price: "",
+      country_id: "",
+      variant_id: "",
+      unit: "",
+      discount_type: "",
+      amount: "",
+      discount_expires_at: "",
+      status: true,
+    },
   ],
 };
 
@@ -41,7 +70,7 @@ export const STATUS_OPTIONS = [
 
 export const DISCOUNT_TYPES = [
   { value: "", label: "No Discount" },
-  { value: "percentage", label: "Percentage (%)" },
+  { value: "percent", label: "Percentage (%)" },
   { value: "flat", label: "Flat" },
 ];
 
@@ -50,60 +79,54 @@ export const SUB_DISCOUNT_TYPES = [
   { value: "flat", label: "Flat" },
 ];
 
-// ─── Build final payload matching exact API contract ─────────────────────────
+// Build final payload matching exact API contract
 export function buildPayload(form) {
+  const isUsb = form.is_usb;
+  const hasVariants = isUsb && form.is_product_variant;
+
+  const subscription_periods = form.subscription_periods
+    .filter((s) => {
+      if (!s.price || !s.country_id) return false;
+      if (!isUsb && !s.duration) return false; // non-USB needs duration
+      if (isUsb && !s.unit) return false; // USB needs unit
+      if (hasVariants && !s.variant_id) return false; // USB+variants needs variant_id
+      return true;
+    })
+    .map((s) => {
+      const entry = {
+        price: parseFloat(s.price),
+        country_id: parseInt(s.country_id),
+        status: s.status,
+      };
+      entry.duration = isUsb ? null : parseInt(s.duration); // null for USB, required for non-USB
+      if (isUsb) entry.unit = s.unit; // USB only (string)
+      if (s.variant_id) entry.variant_id = parseInt(s.variant_id);
+      if (s.discount_type) entry.discount_type = s.discount_type;
+      if (s.amount !== "" && s.amount !== undefined)
+        entry.amount = parseFloat(s.amount);
+      if (s.discount_expires_at)
+        entry.discount_expires_at = s.discount_expires_at;
+      return entry;
+    });
+
   const payload = {
     name: form.name,
     status: form.status,
     category_id: parseInt(form.category_id) || null,
-    is_combo: form.is_combo,
-    is_usb: form.is_usb,
-    is_product_variant: form.is_product_variant,
     is_domain: form.is_domain,
+    is_combo: form.is_combo,
+    is_usb: isUsb,
+    is_product_variant: form.is_product_variant,
     is_delivery_charge: form.is_delivery_charge,
     sort_description: form.sort_description,
     product_details: form.product_details.filter((d) => d.trim() !== ""),
-    product_prices: form.product_prices
-      .filter((p) => p.price !== "")
-      .map((p) => {
-        const entry = {
-          price: parseFloat(p.price) || 0,
-          country_id: parseInt(p.country_id),
-        };
-        if (p.variant_id) entry.variant_id = parseInt(p.variant_id);
-        if (p.discount_type) entry.discount_type = p.discount_type;
-        if (p.discount_amount)
-          entry.discount_amount = parseFloat(p.discount_amount);
-        if (p.discount_expire_at)
-          entry.discount_expire_at = p.discount_expire_at;
-        if (form.is_usb && p.unit) entry.unit = parseInt(p.unit);
-        return entry;
-      }),
+    subscription_periods,
   };
 
   if (form.is_combo) {
     payload.selected_products = form.selected_products.map((id) => ({
       product_id: parseInt(id),
     }));
-  }
-
-  if (form.is_usb && form.is_product_variant && form.variants?.length > 0) {
-    payload.variants = form.variants.map((id) => parseInt(id));
-  }
-
-  if (!form.is_usb) {
-    payload.subscription_periods = form.subscription_periods
-      .filter((s) => s.duration)
-      .map((s) => {
-        const entry = {
-          duration: String(s.duration),
-          status: s.status,
-        };
-        if (s.discount_type) entry.discount_type = s.discount_type;
-        if (s.amount !== "" && s.amount !== undefined)
-          entry.amount = parseFloat(s.amount);
-        return entry;
-      });
   }
 
   return payload;
@@ -129,40 +152,49 @@ export default function useProductForm() {
     setErrors({});
   };
 
-  // ─── Per-step validation ───────────────────────────────────────────────────
+  // Per-step validation
   const validate = (currentStep) => {
     const errs = {};
-    if (currentStep === 1) {
-      // type is always set — no validation needed
-    }
+    const isUsb = form.is_usb;
+    const hasVariants = isUsb && form.is_product_variant;
+
     if (currentStep === 2) {
       if (!form.name.trim()) errs.name = "Product name is required";
       if (!form.category_id) errs.category_id = "Category is required";
       if (form.is_combo && form.selected_products.length < 2)
         errs.selected_products = "Select at least 2 products for a combo pack";
     }
+
     if (currentStep === 3) {
       const valid = form.product_details.some((d) => d.trim() !== "");
       if (!valid) errs.product_details = "Add at least one product feature";
     }
+
     if (currentStep === 4) {
-      if (form.product_prices.length === 0) {
-        errs.product_prices = "Add at least one country price entry";
+      if (form.subscription_periods.length === 0) {
+        errs.subscription_periods = "Add at least one pricing entry";
       } else {
-        const hasInvalidRow = form.product_prices.some(
-          (p) => !p.country_id || p.price === "",
-        );
-        if (hasInvalidRow)
-          errs.product_prices =
-            "Every price entry must have a country and a price";
-      }
-      if (!form.is_usb) {
-        const hasDuration = form.subscription_periods.some((s) => s.duration);
-        if (!hasDuration)
-          errs.subscription_periods =
-            "At least one subscription period is required";
+        const hasInvalidRow = form.subscription_periods.some((s) => {
+          if (!s.price || !s.country_id) return true;
+          if (!isUsb && !s.duration) return true;
+          if (isUsb && !s.unit) return true;
+          if (hasVariants && !s.variant_id) return true;
+          return false;
+        });
+        if (hasInvalidRow) {
+          if (isUsb && hasVariants)
+            errs.subscription_periods =
+              "Every entry must have a country, price, unit, and variant";
+          else if (isUsb)
+            errs.subscription_periods =
+              "Every entry must have a country, price, and unit";
+          else
+            errs.subscription_periods =
+              "Every entry must have a duration, country, and price";
+        }
       }
     }
+
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };

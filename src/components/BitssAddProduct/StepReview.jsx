@@ -1,9 +1,7 @@
 import { Package, Gift, Usb, CheckCircle2, ChevronRight } from "lucide-react";
 import { Badge } from "../Ui";
-import { buildPayload } from "../../hooks/useProductForm";
 import { useCountries } from "../../hooks/useCountries";
 import { useCategories } from "../../hooks/useCategories";
-import { useDeliveryCharges } from "../../hooks/useDeliveryCharges";
 
 // ─── Section wrapper ──────────────────────────────────────────────────────────
 function ReviewSection({ title, onEdit, children }) {
@@ -84,65 +82,52 @@ function ProductTypeBadge({ form }) {
   );
 }
 
-// ─── Product Prices table ─────────────────────────────────────────────────────
-function ProductPricesTable({
-  prices,
-  countries,
-  isUsb,
-  showDeliveryCharge,
-  deliveryCharges,
-  onEdit,
-}) {
-  const filledPrices = prices.filter((p) => p.price);
+// ─── Inline currency icon ─────────────────────────────────────────────────────
+const CurrencyIcon = ({ html }) => (
+  <span dangerouslySetInnerHTML={{ __html: html }} />
+);
 
-  // Resolve country object from id
+// ─── Subscription periods review table ───────────────────────────────────────
+// Unified for all product types — reads from form.subscription_periods.
+function PeriodsTable({ periods, countries, isUsb, showVariants, onEdit }) {
+  const filled = periods.filter((s) => s.duration && s.price && s.country_id);
+
   const getCountry = (country_id) =>
     countries?.find((c) => String(c.id) === String(country_id));
 
-  // Resolve delivery charge label
-  const getDeliveryCharge = (delivery_charge_id) => {
-    if (!delivery_charge_id) return null;
-    return deliveryCharges?.find(
-      (d) => String(d.id) === String(delivery_charge_id),
-    );
-  };
-
-  // Render currency icon HTML safely
-  const CurrencyIcon = ({ html }) => (
-    <span dangerouslySetInnerHTML={{ __html: html }} />
-  );
-
-  // Build discount label using the country currency icon for flat type
-  const discountLabel = (p, country) => {
-    if (!p.discount_type || !p.discount_amount) return "—";
-    if (p.discount_type === "percentage") return `${p.discount_amount}% off`;
-    // flat — use country currency icon
-    const icon = country?.currency_icon ?? "€";
+  const discountLabel = (s, country) => {
+    if (!s.discount_type || !s.amount) return "—";
+    if (s.discount_type === "percent") return `${s.amount}% off`;
+    const icon = country?.currency_icon ?? "";
     return (
       <span>
         <CurrencyIcon html={icon} />
-        {p.discount_amount} off
+        {s.amount} off
       </span>
     );
   };
 
-  // Determine table columns
-  const headers = ["Country & Currency", "Price", "Discount", "Expires"];
-  if (isUsb) headers.splice(3, 0, "Unit"); // insert Unit before Expires for USB
-  if (showDeliveryCharge) headers.push("Delivery Charge");
+  // Build headers dynamically based on product type
+  // Duration is only relevant for non-USB products
+  const headers = isUsb
+    ? ["Country & Currency", "Price", "Discount", "Expires", "Status"]
+    : [
+        "Duration",
+        "Country & Currency",
+        "Price",
+        "Discount",
+        "Expires",
+        "Status",
+      ];
+  if (showVariants) headers.unshift("Variant"); // prepend for USB+variants
+  if (isUsb) headers.unshift("Unit"); // prepend Unit for all USB
 
   return (
-    <ReviewSection title="Country Prices" onEdit={onEdit}>
-      {/* Delivery charge badge */}
-      {showDeliveryCharge && (
-        <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-          <span className="text-xs font-semibold text-blue-700">
-            🚚 Delivery charge enabled for this product
-          </span>
-        </div>
-      )}
-      {filledPrices.length === 0 ? (
-        <p className="text-sm text-gray-400 italic">No prices added.</p>
+    <ReviewSection title="Pricing Periods" onEdit={onEdit}>
+      {filled.length === 0 ? (
+        <p className="text-sm text-gray-400 italic">
+          No pricing periods added.
+        </p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -159,16 +144,40 @@ function ProductPricesTable({
               </tr>
             </thead>
             <tbody>
-              {filledPrices.map((p, i) => {
-                const country = getCountry(p.country_id);
-                const dc = showDeliveryCharge
-                  ? getDeliveryCharge(p.delivery_charge_id)
-                  : null;
+              {filled.map((s, i) => {
+                const country = getCountry(s.country_id);
                 return (
                   <tr
                     key={i}
                     className="border-b border-gray-100 last:border-0"
                   >
+                    {/* Unit — USB only, shown first */}
+                    {isUsb && (
+                      <td className="py-2.5 pr-4 text-gray-600 font-medium whitespace-nowrap">
+                        {s.unit || <span className="text-gray-400">—</span>}
+                      </td>
+                    )}
+
+                    {/* Variant — USB+variants only */}
+                    {showVariants && (
+                      <td className="py-2.5 pr-4 text-gray-600">
+                        {s.variant_id ? (
+                          <span className="px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full text-xs font-semibold">
+                            #{s.variant_id}
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
+                    )}
+
+                    {/* Duration — non-USB only */}
+                    {!isUsb && (
+                      <td className="py-2.5 pr-4 font-semibold text-gray-900 whitespace-nowrap">
+                        {s.duration} mo.
+                      </td>
+                    )}
+
                     {/* Country + currency */}
                     <td className="py-2.5 pr-4">
                       {country ? (
@@ -188,51 +197,38 @@ function ProductPricesTable({
                       )}
                     </td>
 
-                    {/* Price with currency icon */}
+                    {/* Price */}
                     <td className="py-2.5 pr-4 font-bold text-gray-900 whitespace-nowrap">
                       {country ? (
                         <>
                           <CurrencyIcon html={country.currency_icon} />
-                          {p.price}
+                          {s.price}
                         </>
                       ) : (
-                        p.price
+                        s.price
                       )}
                     </td>
 
                     {/* Discount */}
                     <td className="py-2.5 pr-4 text-gray-600 whitespace-nowrap">
-                      {discountLabel(p, country)}
+                      {discountLabel(s, country)}
                     </td>
-
-                    {/* Unit — USB only */}
-                    {isUsb && (
-                      <td className="py-2.5 pr-4 text-gray-600">
-                        {p.unit || <span className="text-gray-400">—</span>}
-                      </td>
-                    )}
 
                     {/* Expires */}
                     <td className="py-2.5 pr-4 text-gray-500 text-xs whitespace-nowrap">
-                      {p.discount_expire_at ? (
-                        p.discount_expire_at.slice(0, 10)
+                      {s.discount_expires_at ? (
+                        s.discount_expires_at.slice(0, 10)
                       ) : (
                         <span className="text-gray-400">—</span>
                       )}
                     </td>
 
-                    {/* Delivery charge — only when enabled */}
-                    {showDeliveryCharge && (
-                      <td className="py-2.5 text-gray-600 text-xs whitespace-nowrap">
-                        {dc ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-semibold border border-blue-200">
-                            <CurrencyIcon html={dc.currency} /> {dc.amount}
-                          </span>
-                        ) : (
-                          <span className="text-gray-400 italic">None</span>
-                        )}
-                      </td>
-                    )}
+                    {/* Status */}
+                    <td className="py-2.5">
+                      <Badge variant={s.status ? "green" : "gray"}>
+                        {s.status ? "Active" : "Inactive"}
+                      </Badge>
+                    </td>
                   </tr>
                 );
               })}
@@ -246,15 +242,14 @@ function ProductPricesTable({
 
 // ─── Step 5 main ─────────────────────────────────────────────────────────────
 export default function StepReview({ form, onGoToStep }) {
-  const payload = buildPayload(form);
   const { data: countries } = useCountries();
   const { data: categories } = useCategories();
-  const { data: deliveryCharges = [] } = useDeliveryCharges();
 
-  // Resolve category name dynamically from the same API used in StepBasicInfo
   const categoryName =
     categories?.find((c) => String(c.id) === String(form.category_id))?.name ??
     null;
+
+  const showVariants = form.is_usb && form.is_product_variant;
 
   return (
     <div className="space-y-5">
@@ -277,20 +272,6 @@ export default function StepReview({ form, onGoToStep }) {
           label="Short Description"
           value={form.sort_description || null}
         />
-        <KVRow
-          label="Domain Required"
-          value={
-            form.is_domain ? (
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700">
-                ✓ Yes
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-500">
-                No
-              </span>
-            )
-          }
-        />
       </ReviewSection>
 
       {/* Combo products */}
@@ -305,24 +286,6 @@ export default function StepReview({ form, onGoToStep }) {
                 </span>
               </div>
             ))}
-          </div>
-        </ReviewSection>
-      )}
-
-      {/* USB variants */}
-      {form.is_usb && form.is_product_variant && (
-        <ReviewSection title="USB Variants" onEdit={() => onGoToStep(2)}>
-          <div className="flex flex-wrap gap-2">
-            {form.product_variants
-              .filter((v) => v.variant_name)
-              .map((v, i) => (
-                <span
-                  key={i}
-                  className="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm font-semibold"
-                >
-                  {v.variant_name} GB
-                </span>
-              ))}
           </div>
         </ReviewSection>
       )}
@@ -344,68 +307,14 @@ export default function StepReview({ form, onGoToStep }) {
         </ul>
       </ReviewSection>
 
-      {/* Country prices — with real currency lookup */}
-      <ProductPricesTable
-        prices={form.product_prices}
+      {/* Pricing periods — all product types */}
+      <PeriodsTable
+        periods={form.subscription_periods}
         countries={countries}
         isUsb={form.is_usb}
-        showDeliveryCharge={form.is_delivery_charge}
-        deliveryCharges={deliveryCharges}
+        showVariants={showVariants}
         onEdit={() => onGoToStep(4)}
       />
-
-      {/* Subscription periods — non-USB only */}
-      {!form.is_usb &&
-        form.subscription_periods.some((s) => s.duration && s.amount) && (
-          <ReviewSection
-            title="Subscription Periods"
-            onEdit={() => onGoToStep(4)}
-          >
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    {["Duration", "Discount Type", "Amount", "Status"].map(
-                      (h) => (
-                        <th
-                          key={h}
-                          className="text-xs font-semibold text-gray-500 pb-2 text-left pr-4"
-                        >
-                          {h}
-                        </th>
-                      ),
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {form.subscription_periods
-                    .filter((s) => s.duration && s.amount !== "")
-                    .map((s, i) => (
-                      <tr
-                        key={i}
-                        className="border-b border-gray-100 last:border-0"
-                      >
-                        <td className="py-2 pr-4 font-semibold text-gray-900">
-                          {s.duration} mo.
-                        </td>
-                        <td className="py-2 pr-4 text-gray-600">
-                          {s.discount_type || "—"}
-                        </td>
-                        <td className="py-2 pr-4 text-gray-700 font-medium">
-                          {s.amount}
-                        </td>
-                        <td className="py-2">
-                          <Badge variant={s.status ? "green" : "gray"}>
-                            {s.status ? "Active" : "Inactive"}
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
-          </ReviewSection>
-        )}
 
       {/* Ready indicator */}
       <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">
@@ -413,8 +322,8 @@ export default function StepReview({ form, onGoToStep }) {
         <div>
           <p className="text-sm font-bold text-green-800">Ready to publish</p>
           <p className="text-xs text-green-600">
-            Review the information above, then click "Publish Product" to create
-            it.
+            Review the information above, then click &quot;Publish Product&quot;
+            to create it.
           </p>
         </div>
       </div>

@@ -258,7 +258,7 @@ export default function Products() {
                         !priceEntry?.discount_amount
                       )
                         return null;
-                      return priceEntry.discount_type === "percentage"
+                      return priceEntry.discount_type === "percent"
                         ? `${priceEntry.discount_amount}% off`
                         : `${selectedCountry?.currency_icon ?? ""} ${priceEntry.discount_amount} off`;
                     };

@@ -27,83 +27,50 @@ const BASE_URL = import.meta.env.VITE_NEW_BASE_URL;
 //   3. USB without variants         (is_usb:true,  is_variant:false)
 //   4. USB with size variants       (is_usb:true,  is_variant:true)
 //
+// Pricing now always lives in subscription_periods for all product types.
+// product_prices is gone from the form shape.
+//
 function mapProductToForm(product) {
-  const prices = product.prices ?? [];
   const isUsb = Boolean(product.is_usb);
 
-  // ── product_prices ──────────────────────────────────────────────────────
-  // API key is `original_price`, not `price`.
-  // discount_type: null  →  "" (form convention for "no discount").
-  // discount_amount: 0 with no type  →  "" so the discount field stays empty.
-  const product_prices = prices.map((p) => ({
-    country_id: p.country_id != null ? String(p.country_id) : "",
-    variant_id: p.variant_id != null ? String(p.variant_id) : "",
-    price: p.original_price != null ? String(p.original_price) : "",
-    discount_type: p.discount_type ?? "",
-    discount_amount:
-      p.discount_type && p.discount_amount ? String(p.discount_amount) : "",
-    discount_expire_at: p.discount_expire_at ?? "",
-    unit: p.unit != null ? String(p.unit) : "",
-    delivery_charge_id:
-      p.delivery_charge_id != null ? String(p.delivery_charge_id) : null,
+  // ── subscription_periods — all product types ─────────────────────────────
+  //
+  // API returns a top-level `subscriptions[]` array. Each entry has:
+  //   id, country_id, original_price, discount_type, discount_amount,
+  //   variant_id (nullable), unit (nullable), variant_name (nullable)
+  //
+  const rawSubs = product.subscriptions ?? [];
+
+  const subscription_periods = rawSubs.map((sub) => ({
+    subscription_id: sub.id, // keep for PUT
+    duration: String(sub.duration_months ?? sub.duration ?? ""), // not in response yet; keep blank
+    price: sub.original_price != null ? String(sub.original_price) : "",
+    country_id: sub.country_id != null ? String(sub.country_id) : "",
+    variant_id: sub.variant_id != null ? String(sub.variant_id) : "",
+    unit: sub.unit != null ? String(sub.unit) : "",
+    discount_type: sub.discount_type ?? "",
+    // Only surface an amount when there is an actual discount type
+    amount:
+      sub.discount_type && sub.discount_amount
+        ? String(sub.discount_amount)
+        : "",
+    discount_expires_at:
+      sub.discount_expires_at ?? sub.discount_expire_at ?? "",
+    status: sub.status != null ? Boolean(sub.status) : true,
   }));
 
-  // ── subscription_periods (non-USB only) ─────────────────────────────────
-  // The API nests subscription data inside each price entry under
-  // `subscription_pricing[]`, not at the product level.
-  // All price entries share the same subscription list; use the first one
-  // that has data.
-  let subscription_periods = INITIAL_FORM.subscription_periods;
-  if (!isUsb) {
-    const sourcePriceEntry = prices.find(
-      (p) => p.subscription_pricing?.length > 0,
-    );
-    if (sourcePriceEntry) {
-      subscription_periods = sourcePriceEntry.subscription_pricing.map(
-        (sub) => ({
-          subscription_id: sub.subscription_id, // keep for PUT reference
-          duration: String(sub.duration_months ?? ""),
-          discount_type: sub.discount_type ?? "",
-          // Only surface an amount when there's an actual discount type
-          amount:
-            sub.discount_type && sub.discount_amount
-              ? String(sub.discount_amount)
-              : "",
-          status: true, // API doesn't return status per-period; default active
-        }),
-      );
-    }
-  }
+  // Fall back to INITIAL_FORM defaults when the API returns nothing
+  const finalPeriods =
+    subscription_periods.length > 0
+      ? subscription_periods
+      : INITIAL_FORM.subscription_periods;
 
   // ── selected_products (combo) ────────────────────────────────────────────
-  // combo_products[] objects have an `id` field (the child product's ID).
   const selected_products = Boolean(product.is_combo)
     ? (product.combo_products ?? []).map((p) => p.id)
     : [];
 
-  // ── variants for USB+variant products ───────────────────────────────────
-  // The API always returns `variants: []` (empty). Variant information is
-  // embedded in each price entry as `variant_id` + `variant_name`.
-  // We derive:
-  //   form.variants         — numeric IDs for VariantPicker checkboxes
-  //   form.product_variants — {variant_name} objects for StepReview display
-  const seen = new Set();
-  const product_variants = [];
-  const variants = [];
-  for (const p of prices) {
-    if (p.variant_id != null && !seen.has(p.variant_id)) {
-      seen.add(p.variant_id);
-      variants.push(Number(p.variant_id));
-      product_variants.push({
-        variant_id: String(p.variant_id),
-        variant_name: p.variant_name ?? "",
-      });
-    }
-  }
-
   // ── details[] ───────────────────────────────────────────────────────────
-  // API returns plain strings. Guard against the legacy object shape
-  // {desc_name} just in case the API ever changes back.
   const product_details =
     (product.details ?? []).length > 0
       ? product.details
@@ -114,9 +81,6 @@ function mapProductToForm(product) {
       : [""];
 
   // ── status ───────────────────────────────────────────────────────────────
-  // The product-detail endpoint does NOT return a top-level `status` field.
-  // Map integer status if present (comes from combo_products children),
-  // otherwise fall back to "available".
   const statusRaw = product.status;
   const status =
     statusRaw === 1 || statusRaw === "1"
@@ -132,22 +96,17 @@ function mapProductToForm(product) {
     name: product.name ?? "",
     status,
     category_id: product.category_id ? String(product.category_id) : "",
-    // API uses `description`; form uses `sort_description`
     sort_description: product.description ?? product.sort_description ?? "",
+    is_domain: Boolean(product.is_domain),
+    is_delivery_charge: Boolean(product.is_delivery_charge),
     is_combo: Boolean(product.is_combo),
     is_usb: isUsb,
-    // API uses `is_variant`; form uses `is_product_variant`
     is_product_variant: Boolean(
       product.is_variant ?? product.is_product_variant,
     ),
-    is_domain: Boolean(product.is_domain),
-    is_delivery_charge: Boolean(product.is_delivery_charge),
     product_details,
-    product_prices,
-    subscription_periods,
+    subscription_periods: finalPeriods,
     selected_products,
-    variants,
-    product_variants,
   };
 }
 
