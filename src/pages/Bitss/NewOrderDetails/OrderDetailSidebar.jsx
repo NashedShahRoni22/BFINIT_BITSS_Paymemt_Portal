@@ -91,7 +91,6 @@ export default function OrderDetailSidebar({ order, token, onStatusUpdated }) {
         <div className="px-5 py-4 space-y-2.5">
           <FieldRow label="Name">{order.user?.name ?? "—"}</FieldRow>
           <FieldRow label="Email">{order.user?.email ?? "—"}</FieldRow>
-          <FieldRow label="Address">{order.user?.address ?? "—"}</FieldRow>
         </div>
       </div>
 

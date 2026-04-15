@@ -43,7 +43,6 @@ export default function StepProductType({ form, update }) {
   const handleSelect = (option) => {
     update("is_combo", option.sets.is_combo);
     update("is_usb", option.sets.is_usb);
-    // default ON for USB, reset to false for any other type
     update("is_product_variant", option.sets.is_usb ? true : false);
     update("is_domain", false);
   };
@@ -146,7 +145,7 @@ export default function StepProductType({ form, update }) {
         </div>
       )}
 
-      {/* Domain required toggle — applies to all product types */}
+      {/* Domain required toggle */}
       <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-5 space-y-1">
         <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-3">
           🌐 Domain Configuration
@@ -156,6 +155,19 @@ export default function StepProductType({ form, update }) {
           onChange={(val) => update("is_domain", val)}
           label="Domain is required for this product"
           description="Enable if the customer must provide a domain name during checkout (e.g. SSL certificates, hosted software licenses)."
+        />
+      </div>
+
+      {/* Delivery address required toggle */}
+      <div className="bg-green-50 border border-green-200 rounded-xl p-5 space-y-1">
+        <p className="text-xs font-bold text-green-700 uppercase tracking-wider mb-3">
+          📦 Delivery Address Configuration
+        </p>
+        <Toggle
+          checked={form.is_delivery_address}
+          onChange={(val) => update("is_delivery_address", val)}
+          label="Delivery address is required for this product"
+          description="Enable if the customer must provide a delivery address during checkout (e.g. physical USB devices or any product requiring shipping)."
         />
       </div>
 
@@ -177,6 +189,16 @@ export default function StepProductType({ form, update }) {
             <p className="text-xs text-gray-500">
               <span className="font-semibold text-gray-700">
                 Domain required
+              </span>
+            </p>
+          </div>
+        )}
+        {form.is_delivery_address && (
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-green-500" />
+            <p className="text-xs text-gray-500">
+              <span className="font-semibold text-gray-700">
+                Delivery address required
               </span>
             </p>
           </div>

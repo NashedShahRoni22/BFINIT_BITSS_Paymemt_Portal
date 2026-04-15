@@ -251,6 +251,16 @@ export default function OrderDetail() {
                 {order.domain && (
                   <FieldRow label="Domain">{order.domain}</FieldRow>
                 )}
+                {order?.delivery_address && (
+                  <FieldRow label="Delivery Contact No.">
+                    {order?.delivery_address?.phone_number}
+                  </FieldRow>
+                )}
+                {order?.delivery_address && (
+                  <FieldRow label="Delivery Address">
+                    {order?.delivery_address?.address}
+                  </FieldRow>
+                )}
               </SectionCard>
             </div>
 

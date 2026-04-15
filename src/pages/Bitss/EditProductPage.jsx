@@ -99,6 +99,7 @@ function mapProductToForm(product) {
     sort_description: product.description ?? product.sort_description ?? "",
     is_domain: Boolean(product.is_domain),
     is_delivery_charge: Boolean(product.is_delivery_charge),
+    is_delivery_address: Boolean(product.is_delivery_address),
     is_combo: Boolean(product.is_combo),
     is_usb: isUsb,
     is_product_variant: Boolean(

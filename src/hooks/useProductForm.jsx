@@ -9,14 +9,10 @@ export const INITIAL_FORM = {
   is_usb: false,
   is_product_variant: false,
   is_delivery_charge: false,
+  is_delivery_address: false,
   sort_description: "",
-  // product_variants / variants removed — variant selection now happens
-  // per-row in the Pricing step for USB+variant products.
   selected_products: [],
   product_details: [""],
-  // All pricing lives here. Shape varies by product type:
-  //   Non-USB  → duration required, no unit/variant
-  //   USB      → no duration, unit required, variant required if is_product_variant
   subscription_periods: [
     {
       duration: "12",
@@ -87,9 +83,9 @@ export function buildPayload(form) {
   const subscription_periods = form.subscription_periods
     .filter((s) => {
       if (!s.price || !s.country_id) return false;
-      if (!isUsb && !s.duration) return false; // non-USB needs duration
-      if (isUsb && !s.unit) return false; // USB needs unit
-      if (hasVariants && !s.variant_id) return false; // USB+variants needs variant_id
+      if (!isUsb && !s.duration) return false;
+      if (isUsb && !s.unit) return false;
+      if (hasVariants && !s.variant_id) return false;
       return true;
     })
     .map((s) => {
@@ -98,8 +94,8 @@ export function buildPayload(form) {
         country_id: parseInt(s.country_id),
         status: s.status,
       };
-      entry.duration = isUsb ? null : parseInt(s.duration); // null for USB, required for non-USB
-      if (isUsb) entry.unit = s.unit; // USB only (string)
+      entry.duration = isUsb ? null : parseInt(s.duration);
+      if (isUsb) entry.unit = s.unit;
       if (s.variant_id) entry.variant_id = parseInt(s.variant_id);
       if (s.discount_type) entry.discount_type = s.discount_type;
       if (s.amount !== "" && s.amount !== undefined)
@@ -118,6 +114,7 @@ export function buildPayload(form) {
     is_usb: isUsb,
     is_product_variant: form.is_product_variant,
     is_delivery_charge: form.is_delivery_charge,
+    is_delivery_address: form.is_delivery_address,
     sort_description: form.sort_description,
     product_details: form.product_details.filter((d) => d.trim() !== ""),
     subscription_periods,
@@ -152,7 +149,6 @@ export default function useProductForm() {
     setErrors({});
   };
 
-  // Per-step validation
   const validate = (currentStep) => {
     const errs = {};
     const isUsb = form.is_usb;
