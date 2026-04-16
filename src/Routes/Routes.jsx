@@ -13,6 +13,8 @@ import AddProductPage from "../pages/Bitss/AddProductPage";
 import EditProductPage from "../pages/Bitss/EditProductPage";
 import NewOrders from "../pages/Bitss/NewOrders/NewOrders";
 import NewOrderDetails from "../pages/Bitss/NewOrderDetails/NewOrderDetails";
+import Users from "../pages/Bitss/Users";
+import UserDetailPage from "../pages/Bitss/users/UserDetails";
 
 export const router = createBrowserRouter([
   {
@@ -68,6 +70,14 @@ export const router = createBrowserRouter([
       {
         path: "/dashboard/bitss/renew/:invoiceId",
         element: <RenewDetails />,
+      },
+      {
+        path: "/dashboard/bitss/users",
+        element: <Users />,
+      },
+      {
+        path: "/dashboard/bitss/users/:id",
+        element: <UserDetailPage />,
       },
     ],
   },

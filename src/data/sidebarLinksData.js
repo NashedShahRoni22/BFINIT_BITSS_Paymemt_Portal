@@ -1,5 +1,6 @@
 import { MdCategory, MdRefresh } from "react-icons/md";
 import { FaShoppingCart } from "react-icons/fa";
+import { FiUsers } from "react-icons/fi";
 
 export const sidebarLinksData = [
   {
@@ -16,5 +17,10 @@ export const sidebarLinksData = [
     title: "Renew Orders",
     link: "/dashboard/bitss/renew",
     icon: MdRefresh,
+  },
+  {
+    title: "Users",
+    link: "/dashboard/bitss/users",
+    icon: FiUsers,
   },
 ];
