@@ -52,7 +52,7 @@ export default function OrderDetailSidebar({ order, token, onStatusUpdated }) {
             </span>
           </FieldRow>
           {order?.subscription && (
-            <SubscriptionInfo subscription={order.subscription} />
+            <SubscriptionInfo order={order} subscription={order.subscription} />
           )}
           {order?.domain && (
             <FieldRow label="Domain">

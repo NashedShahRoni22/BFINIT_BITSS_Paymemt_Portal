@@ -87,7 +87,7 @@ export function PaymentStatusBadge({ status }) {
   };
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border w-fit ${cfg.bg} ${cfg.text} ${cfg.border}`}
+      className={`inline-flex capitalize items-center px-2 py-0.5 rounded text-xs font-medium border w-fit ${cfg.bg} ${cfg.text} ${cfg.border}`}
     >
       {cfg.label}
     </span>

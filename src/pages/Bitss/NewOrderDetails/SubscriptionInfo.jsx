@@ -1,4 +1,4 @@
-import { Clock, Tag } from "lucide-react";
+import { Clock, Key, Tag, Usb } from "lucide-react";
 
 function formatDuration(months) {
   if (!months) return "—";
@@ -9,8 +9,8 @@ function formatDuration(months) {
   return `${months} Month${months > 1 ? "s" : ""}`;
 }
 
-export default function SubscriptionInfo({ subscription }) {
-  if (!subscription?.duration) return null;
+export default function SubscriptionInfo({ order, subscription }) {
+  if (!subscription?.duration && !subscription?.unit) return null;
 
   const { duration, discount_type, amount } = subscription;
 
@@ -24,13 +24,35 @@ export default function SubscriptionInfo({ subscription }) {
   return (
     <>
       {/* Duration row */}
-      <div className="flex items-center justify-between py-2.5 border-b border-gray-100">
-        <span className=" text-sm text-gray-500">Duration</span>
-        <span className="text-sm flex items-center gap-2 font-semibold text-gray-800">
-          <Clock size={14} className="text-gray-400" />{" "}
-          {formatDuration(duration)}
-        </span>
-      </div>
+      {duration && (
+        <div className="flex items-center justify-between py-2.5 border-b border-gray-100">
+          <span className=" text-sm text-gray-500">Duration</span>
+          <span className="text-sm flex items-center gap-2 font-semibold text-gray-800">
+            <Clock size={14} className="text-gray-400" />{" "}
+            {formatDuration(duration)}
+          </span>
+        </div>
+      )}
+
+      {/* variant row */}
+      {order?.variant && (
+        <div className="flex items-center justify-between py-2.5 border-b border-gray-100">
+          <span className=" text-sm text-gray-500">Variant</span>
+          <span className="text-sm flex items-center gap-2 font-semibold text-gray-800">
+            <Usb size={14} className="text-gray-400" /> {order?.variant?.name}
+          </span>
+        </div>
+      )}
+
+      {/* Unit Row */}
+      {subscription?.unit && (
+        <div className="flex items-center justify-between py-2.5 border-b border-gray-100">
+          <span className=" text-sm text-gray-500">Unit</span>
+          <span className="text-sm flex items-center gap-2 font-semibold text-gray-800">
+            <Key size={14} className="text-gray-400" /> {subscription?.unit}
+          </span>
+        </div>
+      )}
 
       {/* Discount row — only shown when a discount exists */}
       {hasDiscount && (
