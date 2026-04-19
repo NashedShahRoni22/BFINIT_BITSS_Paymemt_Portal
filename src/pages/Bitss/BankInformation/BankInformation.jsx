@@ -8,8 +8,7 @@ const BASE_URL = import.meta.env.VITE_NEW_BASE_URL;
 
 const BANK_TYPES = [
   { value: "bank_transfer", label: "Bank Transfer" },
-  { value: "wire_transfer", label: "Wire Transfer" },
-  { value: "ach", label: "ACH" },
+  { value: "mobile_banking", label: "Mobile Banking" },
 ];
 
 // ─── API calls ────────────────────────────────────────────────────────────────
@@ -229,14 +228,15 @@ function BankCard({ bank, countryName, currencyIcon, onEdit }) {
       {/* Header */}
       <div className="flex items-center gap-3">
         <span className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-50 text-blue-600 font-bold text-sm shrink-0">
-          {countryName?.slice(0, 2).toUpperCase() ?? "—"}
+          {bank?.country?.country_name?.slice(0, 2).toUpperCase() ?? "—"}
         </span>
         <div>
           <h2 className="text-base font-semibold text-gray-800 leading-tight">
             {bank.bank_name}
           </h2>
           <p className="text-xs text-gray-400 mt-0.5">
-            {countryName ?? `Country ID: ${bank.country_id}`}
+            {bank?.country?.country_name ??
+              `Country: ${bank?.country?.country_name}`}
           </p>
         </div>
       </div>
@@ -347,13 +347,13 @@ export default function BankInformation() {
   const openEditModal = (bank) => {
     setSelectedBank(bank);
     setEditForm({
-      country_id: String(bank.country_id ?? ""),
+      country_id: String(bank.country?.id ?? bank.country_id ?? ""),
       bank_name: bank.bank_name ?? "",
       account_no: bank.account_no ?? "",
       branch: bank.branch ?? "",
       routing_number: bank.routing_number ?? "",
       swift_code: bank.swift_code ?? "",
-      type: bank.type ?? "bank_transfer",
+      type: bank.type_name ?? "bank_transfer",
     });
     setShowEditModal(true);
   };

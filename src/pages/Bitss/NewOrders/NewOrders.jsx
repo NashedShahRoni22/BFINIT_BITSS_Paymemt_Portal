@@ -101,7 +101,7 @@ export default function NewOrders() {
         order.product.name
           .toLowerCase()
           .includes(filters.search.toLowerCase()) ||
-        String(order.id).includes(filters.search);
+        String(order.order_number).includes(filters.search);
 
       const matchStatus = !filters.status || order.status === filters.status;
 

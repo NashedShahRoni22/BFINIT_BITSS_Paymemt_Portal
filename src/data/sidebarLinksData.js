@@ -13,11 +13,11 @@ export const sidebarLinksData = [
     link: "/dashboard/bitss/products",
     icon: MdCategory,
   },
-  {
-    title: "Renew Orders",
-    link: "/dashboard/bitss/renew",
-    icon: MdRefresh,
-  },
+  // {
+  //   title: "Renew Orders",
+  //   link: "/dashboard/bitss/renew",
+  //   icon: MdRefresh,
+  // },
   {
     title: "Users",
     link: "/dashboard/bitss/users",

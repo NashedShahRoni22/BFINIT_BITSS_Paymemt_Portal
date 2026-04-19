@@ -30,10 +30,11 @@ const updateCategory = async ({ id, formData, token }) => {
   formDataToSend.append("name", formData.name);
   formDataToSend.append("sort_description", formData.sort_description);
   formDataToSend.append("status", formData.status);
+  formDataToSend.append("_method", "put");
   if (formData.image) formDataToSend.append("image", formData.image);
 
   const response = await fetch(`${BASE_URL}/categories/${id}`, {
-    method: "PUT",
+    method: "POST",
     headers: { Authorization: `Bearer ${token}` },
     body: formDataToSend,
   });

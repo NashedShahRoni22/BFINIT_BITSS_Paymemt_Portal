@@ -8,7 +8,7 @@ const STATUS_OPTIONS = [
   { value: "active", label: "Active" },
   { value: "completed", label: "Completed" },
   { value: "cancelled", label: "Cancelled" },
-  { value: "expired", label: "Expired" },
+  { value: "inactive", label: "Inactive" },
 ];
 
 export default function OrdersFilterBar({ filters, onChange, total }) {
