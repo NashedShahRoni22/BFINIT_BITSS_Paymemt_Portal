@@ -1,6 +1,7 @@
 import { CalendarDays, RefreshCw, Ban, Globe } from "lucide-react";
 import StatusUpdatePanel from "./StatusUpdatePanel";
 import { formatPrice } from "../../../utils/formatPrice";
+import SubscriptionInfo from "./SubscriptionInfo";
 
 function FieldRow({ label, children }) {
   return (
@@ -50,6 +51,9 @@ export default function OrderDetailSidebar({ order, token, onStatusUpdated }) {
               {order.expire_at ? formatDateShort(order.expire_at) : "No Expiry"}
             </span>
           </FieldRow>
+          {order?.subscription && (
+            <SubscriptionInfo subscription={order.subscription} />
+          )}
           {order?.domain && (
             <FieldRow label="Domain">
               <span className="flex items-center gap-1.5">

@@ -28,6 +28,9 @@ export default function StatusUpdatePanel({ order, token, onSuccess }) {
   );
   const [toast, setToast] = useState(null);
 
+  const shouldSendPaymentStatus =
+    defaultPaymentStatus !== "paid" || paymentStatus !== defaultPaymentStatus;
+
   const isStripePayment = paymentMethod === "stripe";
 
   const isDirty =
@@ -42,7 +45,7 @@ export default function StatusUpdatePanel({ order, token, onSuccess }) {
     mutationFn: async () => {
       const body = {
         order_status: orderStatus,
-        ...(defaultPaymentStatus !== "paid" && {
+        ...(shouldSendPaymentStatus && {
           payment_status: resolvedPaymentStatus,
         }),
         payment_method: paymentMethod || "bank_transfer",
